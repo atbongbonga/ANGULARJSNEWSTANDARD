@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Disbursements.Library\Disbursements.Library.csproj" />
+    <ProjectReference Include="..\PF.Library\PF.Library.csproj" />
   </ItemGroup>
 
 </Project>
