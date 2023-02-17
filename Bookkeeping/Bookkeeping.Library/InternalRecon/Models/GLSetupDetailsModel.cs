@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Models
 {
-    internal class GLSetupDetailsModel
+    internal class GLSetupDetailsModel : BaseModel
     {
         public int DocEntry { get; set; }
         public int Line_ID { get; set; }
         public bool IsRequired { get; set; }
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
         public bool IsColumn { get; set; }
 
         

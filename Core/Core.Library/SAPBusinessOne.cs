@@ -10,6 +10,7 @@ namespace AccountingLegacy.Core.Library
     public class SAPBusinessOne :IDisposable
     {
         private Company company;
+        private readonly string server;
 
         public Company Company => company;
         public void BeginTran() => company.StartTransaction();
@@ -19,13 +20,14 @@ namespace AccountingLegacy.Core.Library
         public JournalEntries JournalEntries => company.GetBusinessObject(BoObjectTypes.oJournalEntries);
         public Payments VendorPayments => company.GetBusinessObject(BoObjectTypes.oVendorPayments);
 
-        public SAPBusinessOne()
+        public SAPBusinessOne(string server = "172.30.0.17")
         {
+            this.server = server;
             this.company = new Company();
             if (!this.company.Connected)
             {
                 this.company.DbServerType = BoDataServerTypes.dst_MSSQL2008;
-                this.company.Server = "172.30.1.167";
+                this.company.Server = this.server;
                 this.company.CompanyDB = "HPDI";
                 this.company.DbUserName = "sapdb";
                 this.company.DbPassword = "sapdb";
