@@ -24,6 +24,8 @@ namespace Bookkeeping.Api.Controllers
             try
             {
                 var employee = service.Login(login.username, login.password);
+                employee.UserIP = login.UserIP;
+
                 var auth = new AuthProcessor(configuration);
                 auth.CreateToken(employee, out string token, out DateTime expiration);
                 return Ok(new { token = token, expiration = expiration, user = employee });
