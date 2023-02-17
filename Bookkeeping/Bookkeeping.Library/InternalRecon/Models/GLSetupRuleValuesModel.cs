@@ -12,6 +12,5 @@ namespace Bookkeeping.Library.InternalRecon.Models
         public int DocEntry { get; set; }
         public string? Type { get; set; }
         public string? Value { get; set; }
-
     }
 }

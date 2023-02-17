@@ -13,7 +13,6 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
         private GLSetupHeaderModel header = new GLSetupHeaderModel();
         public GLSetupHeaderModel Header { get => header; set => header = value; }
         public IEnumerable<GLSetupDetailsModel> Details { get; set; }
-        public IEnumerable<GLSetupDetailPropertiesModel> DetailsProperties { get; set; }
         public IEnumerable<GLSetupLogsModel> Logs { get; set; }
     }
 }
