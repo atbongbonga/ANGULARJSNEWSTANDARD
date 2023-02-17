@@ -11,13 +11,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
     internal class GLSetupRepository
     {
         private readonly SERVER server;
+
         public GLSetupRepository()
         {
             server = new SERVER("GL Setup");
         }
 
-        #region HEADER CRUD
-
+        //Header
         public IEnumerable<GLSetupHeaderViewModel> GetHeaders()
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
@@ -80,6 +80,137 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
+        //Details
+        public IEnumerable<GLSetupDetailsModel> GetDetails(int _docEntry)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_DETAILS",
+                    docEntry = _docEntry
+                };
+                return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public GLSetupDetailsModel GetLineDetails(int _docEntry, int _lineId)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_LINE_DETAIL",
+                    docEntry = _docEntry,
+                    line_id = _lineId
+                };
+
+                return cn.QuerySingle<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void RemoveDetail(int _docEntry, int _lineId)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "REMOVE_DETAIL",
+                    docEntry = _docEntry,
+                    line_id = _lineId
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void UpdateDetail(GLSetupDetailsModel _detail)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "UPDATE_DETAIL",
+                    docEntry = _detail.DocEntry,
+                    line_id = _detail.Line_ID,
+                    isRequired = _detail.IsRequired,
+                    detailOperator = _detail.Operator,
+                    isColumn = _detail.IsColumn
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        //Properties
+        public IEnumerable<GLSetupDetailPropertiesModel> GetProperties(int _docEntry, int _lineId)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_PROPERTIES",
+                    docEntry = _docEntry,
+                    line_id = _lineId
+                };
+                return cn.Query<GLSetupDetailPropertiesModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<GLSetupDetailPropertiesModel> GetLineProperties(int _docEntry, int _lineId, int _groupNumber)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_LINE_PROPERTIES",
+                    docEntry = _docEntry,
+                    line_id = _lineId,
+                    groupNumber = _groupNumber
+                };
+                return cn.Query<GLSetupDetailPropertiesModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void RemoveProperty(int _docEntry, int _lineId, int _groupNumber)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "REMOVE_PROPERTY",
+                    docEntry = _docEntry,
+                    line_id = _lineId,
+                    groupNumber = _groupNumber
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void UpdateProperty(IEnumerable<GLSetupDetailPropertiesModel> _properties)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "UPDATE_PROPERTIES",
+                    detailProperties = _properties.ToDataTable()
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        //Posting
         public int PostSetup(GLSetupView _setup)
         {
             var headers = new List<GLSetupHeaderModel>
@@ -107,14 +238,50 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                     {
                         //insert details
                         parameter.header = new List<GLSetupHeaderModel>().ToDataTable();
-                        parameter.mode = "POST_DETAIL";
+                        parameter.mode = "POST_DETAILS";
                         parameter.details = _setup.Details.ToDataTable();
 
                         cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         //insert detail properties
+                        parameter.details = new List<GLSetupDetailsModel>().ToDataTable();
+                        parameter.mode = "POST_PROPERTIES";
+                        parameter.details = _setup.DetailsProperties.ToDataTable();
+
+                        var dataDetailProperties = cn.Query<GLSetupDetailPropertiesModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         // insert logs
+                        var logs = new List<GLSetupLogsModel>();
+                        foreach (var detail in _setup.Details)
+                        {
+                            var properties = dataDetailProperties
+                                .Where(x => x.DocEntry == detail.DocEntry
+                                    && x.Line_ID == detail.Line_ID)
+                                .Select(x => new GLSetupLogsModel
+                                {
+                                    DocEntry = detail.DocEntry,
+                                    Line_ID = detail.Line_ID,
+                                    Status = true, //default active when created
+                                    IsRequired = detail.IsRequired,
+                                    Operator = detail.Operator,
+                                    IsColumn = detail.IsColumn,
+                                    Value = x.Value,
+                                    Number = x.Number,
+                                    PropertyId = x.Id,
+                                    ModifiedBy = _setup.Header.CreatedBy,
+                                    UserIP = _setup.UserIP
+                                });
+
+                            logs.AddRange(properties);
+                        }
+
+                        //changed SP to separate concerns
+                        storedProc = "spInternalReconGLSetupLogs";
+                        parameter.detailProperties = new List<GLSetupDetailPropertiesModel>().ToDataTable();
+                        parameter.mode = "INSERT";
+                        parameter.data = logs.ToDataTable();
+
+                        cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     }
 
                     transaction.Commit();
@@ -128,8 +295,5 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
 
             return _setup.Header.DocEntry;
         }
-
-        #endregion
-
     }
 }

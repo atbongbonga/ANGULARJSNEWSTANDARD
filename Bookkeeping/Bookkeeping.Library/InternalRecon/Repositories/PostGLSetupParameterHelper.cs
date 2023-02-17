@@ -13,5 +13,6 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
         public DataTable? header { get; set; }
         public DataTable? details { get; set; }
         public DataTable? detailProperties { get; set; }
+        public DataTable? data { get; set; }
     }
 }

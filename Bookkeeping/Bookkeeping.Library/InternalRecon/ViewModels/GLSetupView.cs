@@ -9,9 +9,11 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
 {
     internal class GLSetupView
     {
-        private GLSetupHeaderViewModel header = new GLSetupHeaderViewModel();
-        public GLSetupHeaderViewModel Header { get => header; set => header = value; }
-        public IEnumerable<GLSetupDetailsModel>? Details { get; set; }
-        public IEnumerable<GLSetupDetailPropertiesModel>? DetailsProperties { get; set; }
+        public string? UserIP { get; set; }
+        private GLSetupHeaderModel header = new GLSetupHeaderModel();
+        public GLSetupHeaderModel Header { get => header; set => header = value; }
+        public IEnumerable<GLSetupDetailsModel> Details { get; set; }
+        public IEnumerable<GLSetupDetailPropertiesModel> DetailsProperties { get; set; }
+        public IEnumerable<GLSetupLogsModel> Logs { get; set; }
     }
 }
