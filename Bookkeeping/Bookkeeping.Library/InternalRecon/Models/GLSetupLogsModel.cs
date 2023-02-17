@@ -15,7 +15,7 @@ namespace Bookkeeping.Library.InternalRecon.Models
         public string? Operator { get; set; }
         public bool IsColumn { get; set; }
         public string? Value { get; set; }
-        public int Number { get; set; }
+        public bool Number { get; set; }
         public int PropertyId { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }

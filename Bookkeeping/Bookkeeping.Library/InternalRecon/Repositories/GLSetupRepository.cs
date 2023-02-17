@@ -112,7 +112,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public GLSetupDetailsModel GetLineDetails(int _docEntry, int _lineId)
+        public IEnumerable<GLSetupDetailsModel> GetLineDetails(int _docEntry, int _lineId)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -128,7 +128,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public void RemoveDetails(List<GLSetupDetailsModel> _details)
+        public void RemoveDetails(IEnumerable<GLSetupDetailsModel> _details)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -158,7 +158,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public IEnumerable<GLSetupDetailsModel> PostDetails(IEnumerable<GLSetupDetailsModel> _details)
+        public IEnumerable<GLSetupDetailsModel> PostDetails(IEnumerable<GLSetupDetailsModel> _details, int _postedDocEntry)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -166,7 +166,8 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var parameter = new
                 {
                     mode = "POST_DETAILS",
-                    details = _details.ToDataTable()
+                    details = _details.ToDataTable(),
+                    docEntry = _postedDocEntry
                 };
 
                 return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
