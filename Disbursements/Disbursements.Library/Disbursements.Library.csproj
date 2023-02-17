@@ -37,4 +37,8 @@
     <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="COPS\Models\JGMAN\" />
+  </ItemGroup>
+
 </Project>
