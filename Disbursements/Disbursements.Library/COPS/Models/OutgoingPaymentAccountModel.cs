@@ -16,11 +16,11 @@ namespace Disbursements.Library.COPS.Models
         public decimal Amount { get; set; }
         public string TaxGrp { get; set; }
         public string ATC { get; set; }
-        public Double Rate { get; set; }
-        public Double EWT { get; set; }
+        public decimal Rate { get; set; }
+        public decimal EWT { get; set; }
         public int LineID { get; set; }
         public int ManualVAT { get; set; }
-        public Double VAT { get; set; }
-        public Double NetVAT { get; set; }
+        public decimal VAT { get; set; }
+        public decimal NetVAT { get; set; }
     }
 }
