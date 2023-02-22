@@ -124,7 +124,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                     line_id = _lineId
                 };
 
-                return cn.QuerySingle<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
 

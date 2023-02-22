@@ -69,7 +69,7 @@ namespace Bookkeeping.Library.InternalRecon.Services
             else
             {
                 var details = PostDetails(_setup.Details, _setup.Header.DocEntry);
-
+                /**/
                 var logs = details.Select(x => new GLSetupLogsModel
                 {
                     DocEntry = x.DocEntry,
