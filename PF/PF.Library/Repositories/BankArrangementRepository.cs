@@ -248,12 +248,14 @@ namespace PF.Library.Repositories
             {
                 try
                 {
-                    //SETUP HEADER
+                    //SETUP HEADER OF SAP
 
                     foreach (var detail in data.Details.Where(x => x.DocNum == header.DocNum))
                     {
-
+                        //SETUP DETAILS OF SAP
                     }
+
+                    //LOG SUCCESS
 
                 }
                 catch (Exception ex)
