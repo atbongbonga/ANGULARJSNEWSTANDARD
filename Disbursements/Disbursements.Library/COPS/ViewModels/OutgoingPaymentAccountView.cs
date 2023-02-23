@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels
 {
-    public  class OutgoingPaymentView : Payment
+    public  class OutgoingPaymentAccountView
     {
-        public IEnumerable<PaymentAccount>? OutgoingPaymentAccounts { get; set; }
-        public IEnumerable<PaymentInvoice>? OutgoingPaymentInvoices { get; set; }
+        public Payment Header { get; set; }
+        public IEnumerable<PaymentAccount>? Accounts { get; set; }
+
+        public string PaymentMeans { get; set; }
     }
 }
