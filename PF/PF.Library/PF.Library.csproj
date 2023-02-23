@@ -8,11 +8,18 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Interop.SAPbobsCOM">
+      <HintPath>..\..\Core\Core.Library\obj\Debug\net6.0\Interop.SAPbobsCOM.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
