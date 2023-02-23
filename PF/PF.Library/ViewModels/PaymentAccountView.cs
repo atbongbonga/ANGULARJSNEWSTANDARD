@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace PF.Library.ViewModels
 {
-    public class Payment1 : Payment
+    public class PaymentAccountView : PaymentAccount
     {
-        public string AcctName { get; set; }
+
     }
 }
