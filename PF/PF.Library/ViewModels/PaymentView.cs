@@ -9,7 +9,8 @@ namespace PF.Library.ViewModels
 {
     public class PaymentView
     {
-        public IEnumerable<Payment> Headers { get; set; }
-        public IEnumerable<PaymentAccount> Details { get; set; }
+        public IEnumerable<PaymentHeaderView> Headers { get; set; }
+        public IEnumerable<PaymentAccountView> Details { get; set; }
+        public IEnumerable<DocumentEntryView> DocEntries { get; set; }
     }
 }

@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Interop.SAPbobsCOM">
       <HintPath>..\..\Core\Core.Library\obj\Debug\net6.0\Interop.SAPbobsCOM.dll</HintPath>
     </Reference>
