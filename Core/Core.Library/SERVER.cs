@@ -13,6 +13,7 @@ namespace AccountingLegacy
         private readonly string SAP_DISBURSEMENTS_ = string.Empty;
         private readonly string SAP_PF_ = string.Empty;
         private readonly string EMS_HPCOMMON_ = string.Empty;
+        private readonly string SAP_BUSINESSONE_ = string.Empty;
         public SERVER(string ApplicationName)
         {
             appName = ApplicationName;
@@ -27,5 +28,6 @@ namespace AccountingLegacy
         public string SAP_PF => SAP_PF_;
         public string EMS_HPCOMMON => EMS_HPCOMMON_;
         public string SAP_DISBURSEMENTS => SAP_DISBURSEMENTS_;
+        public string SAP_BUSINESSONE => SAP_BUSINESSONE_;
     }
 }
