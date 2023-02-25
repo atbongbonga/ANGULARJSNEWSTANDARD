@@ -15,9 +15,13 @@ namespace AccountingLegacy
         private readonly string EMS_HPCOMMON_ = string.Empty;
 <<<<<<< HEAD
         private readonly string SAP_BOOKKEEPING_ = string.Empty;
+<<<<<<< HEAD
 =======
         private readonly string SAP_BUSINESSONE_ = string.Empty;
 >>>>>>> 3858da79185494209c331dc7021f760d1134d388
+=======
+
+>>>>>>> b7ed7033bac4639a8b2a32b8d65ec01f08167eb8
         public SERVER(string ApplicationName)
         {
             appName = ApplicationName;

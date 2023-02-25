@@ -11,13 +11,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
     internal class GLSetupRepository
     {
         private readonly SERVER server;
+
         public GLSetupRepository()
         {
             server = new SERVER("GL Setup");
         }
 
-        #region HEADER CRUD
-
+        //Header
         public IEnumerable<GLSetupHeaderViewModel> GetHeaders()
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
@@ -80,56 +80,113 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public int PostSetup(GLSetupView _setup)
+        public int PostHeader(GLSetupHeaderModel _header)
         {
-            var headers = new List<GLSetupHeaderModel>
-            {
-                _setup.Header
-            };
+            var headers = new List<GLSetupHeaderModel> { _header };
 
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
-                var transaction = cn.BeginTransaction(0);
-
-                try
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
                 {
-                    var storedProc = "spInternalReconGLSetup";
-                    var parameter = new PostGLSetupParameterHelper
-                    {
-                        mode = "POST_HEADER",
-                        header = headers.ToDataTable()
-                    };
+                    mode = "POST_HEADER",
+                    headers = headers.ToDataTable()
+                };
 
-                    _setup.Header.DocEntry = cn.ExecuteScalar<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                    if (_setup.Header.DocEntry == 0) throw new ApplicationException("Couldn't create header.");
-                    else
-                    {
-                        //insert details
-                        parameter.header = new List<GLSetupHeaderModel>().ToDataTable();
-                        parameter.mode = "POST_DETAIL";
-                        parameter.details = _setup.Details.ToDataTable();
-
-                        cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                        //insert detail properties
-
-                        // insert logs
-                    }
-
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    throw new ApplicationException(ex.Message);
-                }
+                return cn.ExecuteScalar<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
-
-            return _setup.Header.DocEntry;
         }
 
-        #endregion
+        //Details
+        public IEnumerable<GLSetupDetailsModel> GetDetails(int _docEntry)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_DETAILS",
+                    docEntry = _docEntry
+                };
+                return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
 
+        public IEnumerable<GLSetupDetailsModel> GetLineDetails(int _docEntry, int _lineId)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "GET_LINE_DETAILS",
+                    docEntry = _docEntry,
+                    line_id = _lineId
+                };
+
+                return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void RemoveDetails(IEnumerable<GLSetupDetailsModel> _details)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "REMOVE_DETAILS",
+                    details = _details.ToDataTable()
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void UpdateDetails(IEnumerable<GLSetupDetailsModel> _details)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "UPDATE_DETAILS",
+                    details = _details.ToDataTable()
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<GLSetupDetailsModel> PostDetails(IEnumerable<GLSetupDetailsModel> _details, int _postedDocEntry)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetup";
+                var parameter = new
+                {
+                    mode = "POST_DETAILS",
+                    details = _details.ToDataTable(),
+                    docEntry = _postedDocEntry
+                };
+
+                return cn.Query<GLSetupDetailsModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        //Logs
+        public void InsertLogs(IEnumerable<GLSetupLogsModel> _logs)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconGLSetupLogs";
+                var parameter = new
+                {
+                    data = _logs.ToDataTable()
+                };
+
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
     }
 }
