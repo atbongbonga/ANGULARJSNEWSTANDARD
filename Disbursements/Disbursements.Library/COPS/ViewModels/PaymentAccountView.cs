@@ -1,4 +1,5 @@
 ﻿using Core.Library.Models;
+using Disbursements.Library.COPS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels
 {
-    public class OutgoingPaymentInvoiceView
+    public  class PaymentAccountView : PaymentAccount
     {
-        public Payment Header { get; set; }
-        public IEnumerable<PaymentInvoice>? Invoices { get; set; }
-
+        
     }
 }
