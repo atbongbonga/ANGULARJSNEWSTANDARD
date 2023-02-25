@@ -11,6 +11,6 @@ namespace AccountingLegacy.Disbursements.Library.Interfaces.Repositories
 {
     public interface IPCFOPrepository
     {
-        int PostPCFOP(OPPostingModel model);
+        //int PostPCFOP(OPPostingModel model);
     }
 }

@@ -25,7 +25,7 @@ namespace AccountingLegacy.Core.Library
         public SAPBusinessOne(string server = "172.30.0.17")
         {
             this.server = server;
-            this.srvr = new SERVER("SAP Business One");
+            //this.srvr = new SERVER("SAP Business One");
             this.company = new Company();
             if (!this.company.Connected)
             {
