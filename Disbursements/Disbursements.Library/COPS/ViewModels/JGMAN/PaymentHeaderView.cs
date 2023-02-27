@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Library.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.JGMAN
 {
-    public class JGMANPostingDetailView
+    public class PaymentHeaderView : Payment
     {
-        public string Category { get; set; }
-        public string BranchCode { get; set; }
-
+        public string AcctCode { get; set; }
     }
 }

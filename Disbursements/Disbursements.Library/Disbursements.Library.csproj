@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="COPS\Models\JGMAN\" />
+    <Folder Include="COPS\Models\" />
   </ItemGroup>
 
 </Project>

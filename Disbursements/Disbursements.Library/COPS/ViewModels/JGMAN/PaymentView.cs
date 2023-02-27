@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.JGMAN
 {
-    public class JGMANPostingView
+    public class PaymentView
     {
-        public JGMANPostingHeaderView Header { get; set; }
-        public IEnumerable<JGMANPostingDetailView> Details { get; set; }
+        public PaymentHeaderView Header { get; set; }
+        public IEnumerable<PaymentAccountView> Accounts { get; set; }
     }
 }
