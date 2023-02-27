@@ -1,4 +1,5 @@
 ﻿using AccountingLegacy.Disbursements.Library.PCF.Models;
+using Core.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,4 +19,12 @@ namespace AccountingLegacy.Disbursements.Library.PCF.ViewModels
         public PCFHdr Header { get; set; }
         public List<PCFDtl> Detail { get; set; }
     }
+
+    public class PCFCheckAcct : PaymentAccount
+    { 
+        public List<PaymentAccount> Accounts { get; set; }
+        public List<PCFPaymentChecks> Checks { get; set; }
+    }
+
+
 }

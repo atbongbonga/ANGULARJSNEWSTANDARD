@@ -29,7 +29,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Models
         public string PMeans { get; set; }
         public string UserID { get; set; }
     }
-
     public class PCFDtl
     {
         public string AcctCode { get; set; }
@@ -38,7 +37,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Models
         public Double Amount { get; set; }
 
     }
-
     public class PCFPayHeader {
         public int DocEntry { get; set; }
         public int OPNum { get; set; }
@@ -59,7 +57,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Models
         public string PostBy { get; set; }
         public string Custodian { get; set; }
     }
-
     public class PCFPayDetail
     {
         public int DocNum { get; set; }
@@ -107,5 +104,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Models
 
 
     }
+   
 
 }
