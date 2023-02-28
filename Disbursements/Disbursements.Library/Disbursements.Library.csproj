@@ -8,11 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
-    <Compile Remove="PCF\**" />
     <EmbeddedResource Remove="OPUtils\**" />
-    <EmbeddedResource Remove="PCF\**" />
     <None Remove="OPUtils\**" />
-    <None Remove="PCF\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +32,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PCF\Models\" />
+    <Folder Include="PCF\Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="COPS\Models\" />
   </ItemGroup>
 
 </Project>
