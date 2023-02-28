@@ -16,6 +16,7 @@ using AccountingLegacy.Disbursements.Library.COPS.Models;
 using AccountingLegacy.Disbursements.Library.Interfaces.Repositories;
 using Dapper;
 using MoreLinq;
+using Disbursements.Library.PaymentRequisition.Models;
 
 namespace Disbursements.Library.PaymentRequisition.Repositories
 
@@ -27,23 +28,41 @@ namespace Disbursements.Library.PaymentRequisition.Repositories
         {
             server = new SERVER("Payment Posting");
         }
-        public IEnumerable<Payment> GetPayments(string docEntry)
+        public IEnumerable<DisbursementList> GetPaymentsAccount(string docEntry, string sapDoc)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-                var storedProc = "spAgenciesImported";
+                var storedProc = "spPRLoadPostDetails";
                 var parameters = new
                 {
-                    mode = "PAYMENT_TEMPLATE",
-                    docEntry = docEntry
+                    docEntry = docEntry,
+                    SapDoc = sapDoc
                     
                 };
-                return cn.Query<Payment>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                return cn.Query<DisbursementList>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<SAPPaymentRequest> GetForPostingPayment(string docEntry, string sapDoc)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                var storedProc = "spPRLoadPostDetails";
+                var parameters = new
+                {
+                    docEntry = docEntry,
+                    SapDoc = sapDoc
+
+                };
+                return cn.Query<SAPPaymentRequest>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
 
 
-        public void PostPayment(IEnumerable<Payment> requestpayments)
+
+
+
+        public void PostPayment(IEnumerable<DisbursementList> requestpayments)
         {
             using (var sap = new SAPBusinessOne())
             {
