@@ -10,7 +10,7 @@ namespace Disbursements.Api.Controllers.PCF
     public class PCFOPController : ControllerBase
     {
 
-        public ActionResult PostPCFOP([FromBody] PCFOPView model) {
+        public ActionResult PostPCFOP([FromBody] PCFUserInputView model) {
             try
             {
                 PCFOPService service = new PCFOPService();

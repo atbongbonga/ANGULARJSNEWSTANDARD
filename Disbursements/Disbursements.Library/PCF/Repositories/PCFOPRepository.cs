@@ -35,7 +35,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public void OPChangesLogs(string UserID) {
+        public void InsertChangesLogs(string UserID) {
 
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
@@ -62,7 +62,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public void OPPostVPM4Update(int OPNum , List<PCFPayDetail> model , string UserID) {
+        public void InsertVPM4New(int OPNum , List<PCFUserInputDetail> model , string UserID) {
 
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
@@ -119,7 +119,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public int UpsertPCFDetails(PCFOPView model) {
+        public int UpdatePCFTable(PCFUserInputView model) {
 
             using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
             {
@@ -146,7 +146,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                         TotalAmt = model.Header.Total,
                         SalesInvDate = "01/01/1900",
                         SalesInvDateReceive = "01/01/1900",
-                        Checknum = model.Header.ChkNum == null ? SqlString.Null : model.Header.ChkNum,
+                        Checknum = model.Header.ChkNum,
                         Si = SqlString.Null,
                         VFrom = "01/01/1900",
                         VTo = "01/01/1900"
@@ -181,7 +181,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
              }
         
         }
-        public int PostPCFOP(PCFOPView model) {
+        public int PostPCFOP(PCFUserInputView model) {
 
             using (var sap = new SAPBusinessOne()) {
 
@@ -193,7 +193,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 try
                 {
 
-                    PCFHeaderPostTemplate Header = GetPostTemplateHeader(model);
+                    PCFPostingHeaderTemplate Header = GetPostTemplateHeader(model);
                  
                     oPay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
                     oPay.CardCode = "";
@@ -223,9 +223,9 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                     int i = 0;
                     foreach (var item in model.Detail) {
                         // Get Template for Posting
-                        PCFCheckAcct CheckAcct = GetPostTemplateDetail(model.Header, item);
+                        PCFPostGLAccountView GLAccounts = GetPostTemplateDetail(model.Header, item);
 
-                        foreach (var accountitem in CheckAcct.Accounts) {
+                        foreach (var accountitem in GLAccounts.PaymentAccounts) {
 
                             oPay.AccountPayments.AccountCode = accountitem.AcctCode;
                             oPay.AccountPayments.SumPaid = Convert.ToDouble(accountitem.SumApplied);
@@ -233,7 +233,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                             oPay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = i.ToString();
                         }
 
-                        foreach (var checkitem in CheckAcct.Checks) {
+                        foreach (var checkitem in GLAccounts.DuetoAdvancesAccounts) {
 
                             oPay.Checks.Branch = checkitem.Branch;
                             oPay.Checks.AccounttNum = checkitem.Branch;
@@ -254,7 +254,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                         if (sap.Company.InTransaction) { sap.Company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit); }
                         string opnum = sap.Company.GetNewObjectKey();
 
-                        OPPostVPM4Update(Convert.ToInt32(opnum), model.Detail , model.Header.PostBy); // Execute stored proc. for table update
+                        InsertVPM4New(Convert.ToInt32(opnum), model.Detail , model.Header.PostBy); // Execute stored proc. for table update
                         return Convert.ToInt32(opnum);
                     }
                     else {
@@ -271,7 +271,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             
         }
 
-        public int UpatePCFOP(PCFView model)
+        public int UpatePCFOPReference(PCFUserInputView model)
         {
             try
             {
@@ -307,12 +307,12 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
           
         }
 
-        public PCFCheckAcct GetPostTemplateDetail(PCFPayHeader Header , PCFPayDetail Detail) {
-          
-            PCFCheckAcct model = new PCFCheckAcct();
-            List<PCFInputsDetail> detail = new List<PCFInputsDetail>();
+        public PCFPostGLAccountView GetPostTemplateDetail(PCFUserInputHeader Header , PCFUserInputDetail Detail) {
+
+            PCFPostGLAccountView model = new PCFPostGLAccountView();
+            List<PCFStoredProcTableDetail> detail = new List<PCFStoredProcTableDetail>();
          
-            detail.Add(new PCFInputsDetail
+            detail.Add(new PCFStoredProcTableDetail
             {
                 SAP = Detail.SAP,
                 AcctCode = Detail.AcctCode ,
@@ -331,16 +331,16 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                                Bank = Header.Bank,
                                PCFOPDetail = detail.ToDataTable()
                              }, commandType: CommandType.StoredProcedure);
-                model.Accounts = reader.Read<PaymentAccount>().ToList();
-                model.Checks = reader.Read<PCFPaymentChecks>().ToList();
+                model.PaymentAccounts = reader.Read<PaymentAccount>().ToList();
+                model.DuetoAdvancesAccounts = reader.Read<PCFPostDuetoAdvanceAccounts>().ToList();
             }
             return model;
         }
-        public PCFHeaderPostTemplate GetPostTemplateHeader(PCFOPView model) {
+        public PCFPostingHeaderTemplate GetPostTemplateHeader(PCFUserInputView model) {
 
-            List<PCFInputsHeader> Input = new List<PCFInputsHeader>();
+            List<PCFStoredProcTableHeader> Input = new List<PCFStoredProcTableHeader>();
 
-            Input.Add(new PCFInputsHeader
+            Input.Add(new PCFStoredProcTableHeader
             {
                 Payee = model.Header.Payee,
                 Addr = model.Header.Addr,
@@ -370,7 +370,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                     Amount = model.Header.Total,
                     @PCFOPHeader = Input.ToDataTable()
                 };
-                return cn.QuerySingle<PCFHeaderPostTemplate>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                return cn.QuerySingle<PCFPostingHeaderTemplate>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
 

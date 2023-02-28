@@ -13,7 +13,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Services
     public class PCFOPService
     {
 
-        public int PostPCFOP(PCFOPView model) {
+        public int PostPCFOP(PCFUserInputView model) {
             try
             {
                 PCFOPRepository repo = new PCFOPRepository();
@@ -21,19 +21,18 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Services
                 if (model.Header.PType.ToString().ToUpper() == "WITH SAP")
                 {
                     _OPNum = repo.PostPCFOP(model);
-                    repo.OPChangesLogs(model.Header.PostBy);
+                    repo.InsertChangesLogs(model.Header.PostBy);
                 }
                 else {
                     _OPNum = model.Header.OPNum;
                     repo.CheckBankDetail(_OPNum, model.Header.Bank);
                 }
 
-                int _OPEntry = repo.UpsertPCFDetails(model); // Update PCF Tables
+                int _OPEntry = repo.UpdatePCFTable(model); 
 
-                PCFView UpdateModel = new PCFView();
-                UpdateModel.Header.DocEntry = _OPEntry;
-                UpdateModel.Header.OPNum = _OPNum;
-                repo.UpatePCFOP(UpdateModel);
+                model.Header.DocEntry = _OPEntry;
+                model.Header.OPNum = _OPNum;
+                repo.UpatePCFOPReference(model);
 
                 return _OPEntry;
             }

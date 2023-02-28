@@ -8,22 +8,17 @@ using System.Threading.Tasks;
 
 namespace AccountingLegacy.Disbursements.Library.PCF.ViewModels
 {
-    public class PCFOPView : PCFOPModel
+    public class PCFUserInputView
     {
-        public PCFPayHeader Header { get; set; }
-        public List<PCFPayDetail> Detail { get; set; }
+        public PCFUserInputHeader Header { get; set; }
+        public List<PCFUserInputDetail> Detail { get; set; }
       
     }
 
-    public class PCFView { 
-        public PCFHdr Header { get; set; }
-        public List<PCFDtl> Detail { get; set; }
-    }
-
-    public class PCFCheckAcct : PaymentAccount
+    public class PCFPostGLAccountView : PaymentAccount
     { 
-        public List<PaymentAccount> Accounts { get; set; }
-        public List<PCFPaymentChecks> Checks { get; set; }
+        public List<PaymentAccount> PaymentAccounts { get; set; }
+        public List<PCFPostDuetoAdvanceAccounts> DuetoAdvancesAccounts { get; set; }
     }
 
 
