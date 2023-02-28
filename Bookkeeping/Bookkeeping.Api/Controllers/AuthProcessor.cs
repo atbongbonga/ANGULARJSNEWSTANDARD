@@ -7,7 +7,7 @@ namespace Bookkeeping.Api.Controllers
 {
     public class AuthProcessor
     {
-        private IConfiguration configuration;
+        private readonly IConfiguration configuration;
         public AuthProcessor(IConfiguration configuration)
         {
             this.configuration = configuration;
