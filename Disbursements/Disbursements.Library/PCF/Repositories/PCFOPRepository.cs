@@ -329,13 +329,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                              param: new 
                              { Mode = "GetPostTemplateDetail",
                                Bank = Header.Bank,
-                               CardName = Header.Payee,
-                               DocDate = Header.DocDate,
-                               Comments = Header.Remarks,
-                               ChkNo = Header.ChkNum,
-                               WhsCode = Header.BranchCode,
-                               Amount = Header.Total,
-                               PType = Header.PType,
                                PCFOPDetail = detail.ToDataTable()
                              }, commandType: CommandType.StoredProcedure);
                 model.Accounts = reader.Read<PaymentAccount>().ToList();
@@ -358,7 +351,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 WhsCode = model.Header.WhsCode ,
                 Bank = model.Header.Bank,
                 Total = Convert.ToDecimal(model.Header.Total),
-                TaxAmount =Convert.ToDecimal(model.Detail.Where(x => !string.IsNullOrEmpty(x.ATCCode) && x.WTax != 0).Select(x => x.WTax).DefaultIfEmpty().Sum()),
+                TaxAmount = Convert.ToDecimal(model.Detail.Where(x => !string.IsNullOrEmpty(x.ATCCode) && x.WTax != 0).Select(x => x.WTax).DefaultIfEmpty().Sum()),
                 PostBy = model.Header.PostBy
 
             });
@@ -369,6 +362,12 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 var parameters = new
                 {
                     mode = "GetPostTemplateHeader",
+                    CardName = model.Header.Payee,
+                    DocDate = model.Header.DocDate,
+                    Comments = model.Header.Remarks,
+                    ChkNo = model.Header.ChkNum,
+                    WhsCode = model.Header.BranchCode,
+                    Amount = model.Header.Total,
                     @PCFOPHeader = Input.ToDataTable()
                 };
                 return cn.QuerySingle<PCFHeaderPostTemplate>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
