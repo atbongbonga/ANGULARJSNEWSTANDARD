@@ -13,6 +13,7 @@ using Dapper;
 using SAPbobsCOM;
 using Disbursements.Library.PCF.Helpers;
 using Disbursements.Library.PCF.Models;
+using System.Reflection.PortableExecutable;
 
 namespace Disbursements.Library.PCF.Repositories
 {
@@ -22,7 +23,7 @@ namespace Disbursements.Library.PCF.Repositories
         private readonly string empCode;
         public JournalEntryRepository(string empCode = "")
         {
-            server = new SERVER("PCF JE");
+            server = new SERVER(PcfBuilder.PCFSERVER());
             this.empCode = empCode;
         }
         public int PostJrnlEntry(JrnlEntryView data)
@@ -37,7 +38,7 @@ namespace Disbursements.Library.PCF.Repositories
                     entry.Memo = data.Header.Memo.Trim();
                     entry.Reference = data.Header.Ref1.Trim();
                     entry.Reference2 = data.Header.Ref2.Trim();
-                    entry.Reference3 = data.Header.Ref3.Trim();
+                    if(data.Header.Ref3 is not null) entry.Reference3 = data.Header.Ref3.Trim();
 
                     foreach (var item in data.Details)
                     {
@@ -55,20 +56,31 @@ namespace Disbursements.Library.PCF.Repositories
                     if (returnValue == 0)
                     {
                         var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
-                        return transId;
-                        //using (IDbConnection cn = new SqlConnection(server.SAP_PF))
-                        //{
-                        //    var storedProc = "spProfFees";
-                        //    var parameters = new
-                        //    {
-                        //        mode = "POST_CA",
-                        //        docEntry = docEntry,
-                        //        transId = transId,
-                        //        empCode = empCode,
-                        //    };
+                        //confirm if not need pcfop
+                        if (int.Parse(IsJEUpdated(transId)) == 1)
+                        {
+                          throw new ApplicationException(PcfBuilder.IsJEUpdated());
+                        }
+                        else {
+                            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                            {
+                                var storedProc = PcfBuilder.spPcfJE();
+                                var parameters = new
+                                {
+                                    mode = PcfBuilder.spModeJEUpdateTables(),
+                                    transId = transId,
+                                    pcfOP = data.Header.PCFOP,
+                                    pcfDoc = data.Header.PCFDoc,
+                                };
 
-                        //    cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                        //}
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            }
+                        }
+
+
+
+                        return transId;
+                       
 
                     }
                     else
@@ -91,14 +103,26 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
-  
-        public string GettAcctCodeByFormatCode(string acctcode)
+        
+        public string GetAcctCodeByFormatCode(string acctcode)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 return cn.QueryFirstOrDefault<string>(PcfBuilder.GetAcctCodeByFormatCode(acctcode));
             }
         }
+
+
+        public string IsJEUpdated(int transid)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            {
+                return cn.QueryFirstOrDefault<string>(PcfBuilder.IsJEUpdated( transid));
+            }
+        }
+
+
+
         private void LogError(PCFErrorLogs log)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))

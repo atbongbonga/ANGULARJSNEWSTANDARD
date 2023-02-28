@@ -9,7 +9,7 @@ namespace Disbursements.Library.PCF.ViewModels
 {
     public class JrnlEntryView
     {
-        public JrnlEntry Header { get; set; }
+        public JournalEntryHeaderView Header { get; set; }
         public List<JournalEntrDetailView> Details { get; set; }
     }
 }

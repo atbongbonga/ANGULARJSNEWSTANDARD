@@ -23,8 +23,7 @@ namespace Disbursements.Library.PCF.Services
   
         public int PostJrnlEntry(JrnlEntryView data)
         {
-            //if (string.IsNullOrEmpty(segment_0)) throw new ApplicationException("Segment_0 cannot be null or empty");
-
+         
             data.Header.Ref1 = data.Header.Ref1.Length > 99 ? data.Header.Ref1.Substring(0, 99): data.Header.Ref1;
             data.Header.Ref2 = data.Header.Ref2.Length > 99 ? data.Header.Ref2.Substring(0, 99) : data.Header.Ref2;
             data.Header.Ref3 = data.Header.Ref3.Length > 26 ? data.Header.Ref3.Substring(0, 99) : data.Header.Ref3;
@@ -40,7 +39,7 @@ namespace Disbursements.Library.PCF.Services
             int detailCount = data.Details.Count();
             for (var i = 0; i < detailCount; i++)
             {
-                var account= data.Details[i].Account != null ? data.Details[i].Account : _repository.GettAcctCodeByFormatCode(data.Details[i].AccountCode);
+                var account= data.Details[i].Account != null ? data.Details[i].Account : _repository.GetAcctCodeByFormatCode(data.Details[i].FormatCode);
                 var shortName = data.Details[i].ShortName != null && data.Details[i].FormatCode.Substring(0, 5) == PcfBuilder.ShortNameCheck() ? data.Details[i].ShortName : account;
                 model.Details.Add(new JournalEntrDetailView()
                 {
@@ -61,7 +60,7 @@ namespace Disbursements.Library.PCF.Services
         }
 
 
-
+        
 
 
 

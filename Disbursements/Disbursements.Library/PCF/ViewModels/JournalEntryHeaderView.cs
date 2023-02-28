@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.PCF.ViewModels
 {
-    public class JournalEntrDetailView : JrnlEntryDetail
+    public class JournalEntryHeaderView: JrnlEntry
     {
-      public string AccountCode { get; set; }
-      public string FormatCode { get; set; }
         public string PCFOP { get; set; }
+        public string PCFDoc { get; set; }
     }
 }
