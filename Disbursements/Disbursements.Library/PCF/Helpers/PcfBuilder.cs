@@ -35,6 +35,10 @@ namespace Disbursements.Library.PCF.Helpers
         {
             return "spPcfJE";
         }
+        public static string spPcfJE1051()
+        {
+            return "spPcfJELegacy";
+        }
         public static string spModeJEUpdateTables()
         {
             return "POST_JE_UpdateTables";

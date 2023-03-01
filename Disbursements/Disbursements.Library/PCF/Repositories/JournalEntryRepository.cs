@@ -75,6 +75,19 @@ namespace Disbursements.Library.PCF.Repositories
 
                                 cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
+                            using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                            {
+                                var storedProc = PcfBuilder.spPcfJE1051();
+                                var parameters = new
+                                {
+                                    mode = PcfBuilder.spModeJEUpdateTables(),
+                                    transId = transId,
+                                    pcfOP = data.Header.PCFOP,
+                                    pcfDoc = data.Header.PCFDoc,
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            }
                         }
 
 
