@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.ViewModels
 {
-    internal class ReconTransactionViewModel : ReconTransactionModel
+    public class ReconTransactionViewModel : ReconTransactionModel
     {
         public DateTime RefDate { get; set; }
         public string? Ref1 { get; set; }

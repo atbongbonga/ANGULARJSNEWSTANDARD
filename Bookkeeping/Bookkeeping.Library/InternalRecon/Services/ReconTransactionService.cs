@@ -9,10 +9,15 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Services
 {
-    internal class ReconTransactionService
+    public class ReconTransactionService
     {
         private readonly ReconTransactionRepository _repository;
-        public string _userId;
+        public string? _userId;
+
+        public ReconTransactionService()
+        {
+            _repository = new ReconTransactionRepository();
+        }
 
         public ReconTransactionService(string userId)
         {

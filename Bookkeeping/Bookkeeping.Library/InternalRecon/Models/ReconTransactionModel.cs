@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Models
 {
-    internal class ReconTransactionModel 
+    public class ReconTransactionModel 
     {
         public int DocEntry { get; set; }
         public int GroupNumber { get; set; }
