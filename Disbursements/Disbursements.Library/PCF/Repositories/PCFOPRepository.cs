@@ -192,7 +192,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 SAPbobsCOM.Payments oPay = (SAPbobsCOM.Payments)(sap.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oVendorPayments));
                 try
                 {
-
                     PCFPostingHeaderTemplate Header = GetPostTemplateHeader(model);
                  
                     oPay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;

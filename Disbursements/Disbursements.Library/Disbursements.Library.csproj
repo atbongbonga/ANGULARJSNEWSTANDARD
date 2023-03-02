@@ -8,11 +8,14 @@
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
-    <Compile Remove="PCF\**" />
     <EmbeddedResource Remove="OPUtils\**" />
-    <EmbeddedResource Remove="PCF\**" />
     <None Remove="OPUtils\**" />
-    <None Remove="PCF\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="COPS\Repositories\OPRepository.cs" />
+    <Compile Remove="COPS\Services\OPService.cs" />
+    <Compile Remove="COPS\ViewModels\OPPostingView.cs" />
   </ItemGroup>
 
   <ItemGroup>
