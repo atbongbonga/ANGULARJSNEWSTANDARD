@@ -29,5 +29,10 @@ namespace Core.Library.Models
         public string Ref2 { get; set; }
         public string Comments { get; set; }
         public string JrnlMemo { get; set; }
+        public string U_APDocNo { get; set; }
+        public string U_ChkNum { get; set; }
+        public string U_CardCode { get; set; }
+        public string U_BranchCode { get; set; }
+        public string U_HPDVoucherNo { get; set; }
     }
 }

@@ -13,12 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="COPS\Repositories\OPRepository.cs" />
-    <Compile Remove="COPS\Services\OPService.cs" />
-    <Compile Remove="COPS\ViewModels\OPPostingView.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <COMReference Include="SAPbobsCOM">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>8</VersionMinor>
@@ -38,6 +32,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PaymentRequisition\Services\" />
+    <Folder Include="PCF\Models\" />
+    <Folder Include="PCF\Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="COPS\Models\" />
   </ItemGroup>
 
 </Project>
