@@ -39,4 +39,8 @@
     <Folder Include="PaymentRequisition\Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="COPS\Models\" />
+  </ItemGroup>
+
 </Project>

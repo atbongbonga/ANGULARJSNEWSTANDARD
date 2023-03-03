@@ -11,5 +11,6 @@ namespace Disbursements.Library.PCF.ViewModels
     {
       public string AccountCode { get; set; }
       public string FormatCode { get; set; }
+       
     }
 }
