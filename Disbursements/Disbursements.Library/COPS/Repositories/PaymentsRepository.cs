@@ -195,8 +195,8 @@ namespace Disbursements.Library.COPS.Repositories
                         if (data.Header.DocType == "A") {
                             foreach (var item in data.Accounts)
                             {
-                                var storedProc = "spOPVPM4";
-                                var parameters = new
+                                var storedProc2 = "spOPVPM4";
+                                var parameters2 = new
                                 {
                                     Docnum = docNum,
                                     lineId = item.LineId,
@@ -210,11 +210,12 @@ namespace Disbursements.Library.COPS.Repositories
                                     AtcRate =item.Rate,
                                     TaxGrp =item.TaxGroup
                                 };
-                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                                cn.Execute(storedProc2, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
                             
                         }
                     }
+                    //END OLD SP
 
                 }
                 catch (Exception ex)
