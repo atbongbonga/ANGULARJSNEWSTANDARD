@@ -1,6 +1,5 @@
 ﻿using AccountingLegacy;
 using AccountingLegacy.Core.Library;
-using AccountingLegacy.Disbursements.Library.COPS.ViewModels;
 using Disbursements.Library.COPS.ViewModels.JGMAN;
 using System;
 using System.Collections.Generic;

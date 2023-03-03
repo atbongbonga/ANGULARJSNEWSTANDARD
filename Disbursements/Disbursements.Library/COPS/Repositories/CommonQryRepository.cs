@@ -1,8 +1,5 @@
 ﻿using AccountingLegacy.Core.Library;
 using AccountingLegacy.Disbursements.Library.Auth;
-using AccountingLegacy.Disbursements.Library.COPS.Models;
-using AccountingLegacy.Disbursements.Library.COPS.ViewModels;
-using AccountingLegacy.Disbursements.Library.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
