@@ -1,6 +1,6 @@
 ﻿using AccountingLegacy.Disbursements.Library.COPS.Models;
 using AccountingLegacy.Disbursements.Library.COPS.ViewModels;
-using Disbursements.Library.COPS.Models;
+using AccountingLegacy.Disbursements.Library.COPS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

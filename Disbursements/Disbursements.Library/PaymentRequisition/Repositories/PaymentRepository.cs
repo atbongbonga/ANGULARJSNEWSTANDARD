@@ -1,7 +1,6 @@
 ﻿using AccountingLegacy;
 using AccountingLegacy.Core.Library;
 using Core.Library.Models;
-using Disbursements.Library.COPS.ViewModels.JGMAN;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -9,8 +8,11 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Disbursements.Library.PaymentRequisition.Models;
+using Dapper;
+using SAPbobsCOM;
 
-namespace Disbursements.Library.PaymentRequisition.Repositories
+namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 {
     internal class PaymentRepository
     {
@@ -26,6 +28,7 @@ namespace Disbursements.Library.PaymentRequisition.Repositories
         {
             try
             {
+                InsertRequestPayment(docEntry, cardCode);
                 var payment = GetPayment(docEntry, sapEntry, cardCode);
                 using (var sap = new SAPBusinessOne("172.30.1.167"))
                 {
@@ -53,23 +56,64 @@ namespace Disbursements.Library.PaymentRequisition.Repositories
             }
             catch (Exception ex)
             {
-                //ERROR LOGS
-                throw ex;
+                throw new ApplicationException(ex.GetBaseException().ToString());
             }
         }
 
         private PaymentView GetPayment(int docEntry, int sapEntry, string cardCode)
         {
-            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+            PaymentView model = new PaymentView();
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-                return cn.Query<JrnlEntryDetail>(
-                    "spProfFees",
-                    new
+                try
+                {
+                    var reader = cn.QueryMultiple("spPaymentRequisition",
+                                 param: new
+                                 {
+                                     Mode = "PAYMENT_TEMPLATE",
+
+                                 }, commandType: CommandType.StoredProcedure);
+                    model.Header = reader.Read<PaymentHeaderView>().Single();
+                    model.Accounts = reader.Read<PaymentAccountView>().ToList();
+
+                    return model;
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException(ex.GetBaseException().ToString());
+                }
+               
+            }
+            
+        }
+
+        public void InsertRequestPayment(int docEntry, string cardCode) {
+
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                var oTransaction = cn.BeginTransaction();
+                try
+                {
+                    var storedProc = "spPaymentRequisition";
+                    var parameters = new
                     {
-                        mode = "CA_TEMPLATE",
-                        docEntry = docEntry
-                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        Mode = "INSERT_REQUEST_PAYMENT",
+                        docEntry = docEntry,
+                        cardCode = cardCode
+
+                    };
+                    cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    oTransaction.Commit();
+                }
+                catch (Exception)
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+
+
             }
         }
+        
     }
 }
