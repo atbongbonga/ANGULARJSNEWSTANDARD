@@ -16,6 +16,6 @@ namespace Disbursements.Library.COPS.ViewModels
         public string GLAcct { get; set; }
         public string ATC { get; set; }
         public decimal EWT { get; set; }
-        public string EWTTransId { get; set; }
+        public int EWTTransId { get; set; }
     }
 }
