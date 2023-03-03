@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Interfaces\Repositories\" />
     <Folder Include="PaymentRequisition\Models\" />
     <Folder Include="PaymentRequisition\Services\" />
   </ItemGroup>

@@ -11,10 +11,9 @@ using Disbursements.Library.COPS.ViewModels;
 using AccountingLegacy.Core.Library;
 using System.Data.SqlClient;
 using System.Data;
-using AccountingLegacy.Disbursements.Library.COPS.Models;
-using AccountingLegacy.Disbursements.Library.COPS.ViewModels;
-using Core.Library.Models;
 using Disbursements.Library.COPS.Models;
+using Disbursements.Library.COPS.ViewModels;
+using Core.Library.Models;
 using System.Reflection.PortableExecutable;
 using System.Net;
 using System.Security.Cryptography;
@@ -195,8 +194,8 @@ namespace Disbursements.Library.COPS.Repositories
                         if (data.Header.DocType == "A") {
                             foreach (var item in data.Accounts)
                             {
-                                var storedProc = "spOPVPM4";
-                                var parameters = new
+                                var storedProc2 = "spOPVPM4";
+                                var parameters2 = new
                                 {
                                     Docnum = docNum,
                                     lineId = item.LineId,
@@ -210,11 +209,12 @@ namespace Disbursements.Library.COPS.Repositories
                                     AtcRate =item.Rate,
                                     TaxGrp =item.TaxGroup
                                 };
-                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                                cn.Execute(storedProc2, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
                             
                         }
                     }
+                    //END OLD SP
 
                 }
                 catch (Exception ex)
