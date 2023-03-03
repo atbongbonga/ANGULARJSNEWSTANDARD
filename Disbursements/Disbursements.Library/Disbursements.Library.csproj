@@ -42,8 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="PCF\Models\" />
-    <Folder Include="PCF\Services\" />
+    <Folder Include="PaymentRequisition\Models\" />
+    <Folder Include="PaymentRequisition\Services\" />
   </ItemGroup>
 
   <ItemGroup>
