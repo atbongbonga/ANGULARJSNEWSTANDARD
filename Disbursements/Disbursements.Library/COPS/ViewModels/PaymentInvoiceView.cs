@@ -11,6 +11,11 @@ namespace Disbursements.Library.COPS.ViewModels
 {
     public class PaymentInvoiceView : PaymentInvoice
     {
-        
+        public decimal Balance { get; set; }
+        public string BrCode { get; set; }
+        public string GLAcct { get; set; }
+        public string ATC { get; set; }
+        public decimal EWT { get; set; }
+        public string EWTTransId { get; set; }
     }
 }

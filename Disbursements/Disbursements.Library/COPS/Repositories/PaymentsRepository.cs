@@ -17,6 +17,7 @@ using Core.Library.Models;
 using Disbursements.Library.COPS.Models;
 using System.Reflection.PortableExecutable;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -31,6 +32,7 @@ namespace Disbursements.Library.COPS.Repositories
             this.empCode = empCode;
 
         }
+
         public PaymentView GetPayment(int docNum)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
@@ -44,9 +46,37 @@ namespace Disbursements.Library.COPS.Repositories
                 return cn.QuerySingle<PaymentView>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
-     
+        private PaymentView GetPaymentData(PaymentView payment)
+        {
+            var output = new PaymentView();
+            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+            {
+
+                using (var multi = cn.QueryMultiple
+                (
+                    "spOutgoingPayment",
+                    new
+                    {
+                        mode = "GET_PAYMENT_DATA",
+                        opdata = payment.Header,
+                        accountdata = payment.Accounts.ToDataTable(),
+                        invoicedata = payment.Invoices.ToDataTable()
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
+                )
+                {
+                    output.Header = (PaymentHeaderView)multi.Read<PaymentHeaderView>();
+                    output.Invoices = multi.Read<PaymentInvoiceView>();
+                    output.Accounts = multi.Read<PaymentAccountView>();
+                    output.Checks = multi.Read<PaymentCheckView>();
+                    return output;
+                }
+            }
+        }
+
         public void PostPayment(PaymentView payment)
         {
+            var data = GetPaymentData(payment);
+
             using(var sap = new SAPBusinessOne())
             {
 
@@ -58,60 +88,67 @@ namespace Disbursements.Library.COPS.Repositories
                     sap.BeginTran();
                     //POST OP
                     pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
-                    pay.Address = payment.Header.Address;
-                    pay.JournalRemarks = payment.Header.JrnlMemo;
-                    pay.DocDate = payment.Header.DocDate;
+                    pay.Address = data.Header.Address;
+                    pay.JournalRemarks = data.Header.JrnlMemo;
+                    pay.DocDate = data.Header.DocDate;
 
-                    pay.CardCode = payment.Header.CardCode;
-                    pay.CardName = payment.Header.CardName;
-                    pay.DocType = payment.Header.DocType == "S" ? SAPbobsCOM.BoRcptTypes.rSupplier : SAPbobsCOM.BoRcptTypes.rAccount;
+                    pay.CardCode = data.Header.CardCode;
+                    pay.CardName = data.Header.CardName;
+                    pay.DocType = data.Header.DocType == "S" ? SAPbobsCOM.BoRcptTypes.rSupplier : SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.DocCurrency = "PHP";
-                    pay.Remarks = payment.Header.Comments;
+                    pay.Remarks = data.Header.Comments;
                     pay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
-                    pay.TaxDate = payment.Header.DocDate;
-                    pay.UserFields.Fields.Item("U_ChkNum").Value = payment.Header.U_ChkNum;
-                    pay.UserFields.Fields.Item("U_CardCode").Value = payment.Header.U_CardCode;
-                    pay.UserFields.Fields.Item("U_BranchCode").Value = payment.Header.U_BranchCode;
-                    pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.Header.VoucherNo;
+                    pay.TaxDate = data.Header.DocDate;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_ChkNum;
+                    pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.U_CardCode;
+                    pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
+                    pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
 
-                    if (payment.Header.TransferAmt is not decimal.Zero)
+                    //BANK TRANSFER
+                    if (data.Header.TransferAmt is not decimal.Zero)
                     {
-                        pay.TransferAccount = payment.Header.BankCode;
-                        pay.TransferSum = (double)payment.Header.DocTotal;
-                        pay.TransferDate = payment.Header.DueDate;
+                        pay.TransferAccount = data.Header.BankCode;
+                        pay.TransferSum = (double)data.Header.DocTotal;
+                        pay.TransferDate = data.Header.DueDate;
                         pay.PrimaryFormItems.PaymentMeans = SAPbobsCOM.PaymentMeansTypeEnum.pmtBankTransfer;
                     }
 
-                    if (payment.Header.CheckAmt is not decimal.Zero)
+                    //CHECKS
+                    foreach (var item in data.Checks)
                     {
-                        pay.Checks.Branch = payment.Header.U_BranchCode;
-                        pay.Checks.AccounttNum = payment.Header.U_BranchCode;
-                        pay.Checks.DueDate = payment.Header.DueDate;
+                        pay.Checks.Branch = item.AcctNum;
+                        pay.Checks.AccounttNum = item.AcctNum;
+                        pay.Checks.DueDate = item.DueDate;
                         pay.Checks.CountryCode = "PHP";
-                        pay.Checks.BankCode = payment.Header.BankCode;
+                        pay.Checks.BankCode = item.BankCode;
                         pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                        pay.Checks.CheckAccount = payment.Header.AcctCode;
-                        pay.Checks.CheckSum = (double)payment.Header.DocTotal;
+                        pay.Checks.CheckAccount = item.CheckAcct;
+                        pay.Checks.CheckSum = (double)item.CheckAmt;
+                        pay.Checks.Add();
+
                     }
 
-                    if (payment.Header.CashAmt is not decimal.Zero)
-                    {
-                        pay.CashAccount = payment.Header.BankCode;
-                        pay.CashSum = (double)payment.Header.DocTotal;
-                    }
-
-                    if (payment.Invoices.Count() > 0) {
-                        foreach (var dtl in payment.Invoices)
+                    if (data.Invoices.Count() > 0) {
+                        foreach (var dtl in data.Invoices)
                         {
                             pay.Invoices.DocEntry = dtl.DocEntry;
                             pay.Invoices.InvoiceType = (SAPbobsCOM.BoRcptInvTypes)dtl.InvType;
                             pay.Invoices.SumApplied = (double)dtl.SumApplied;
                             pay.Invoices.Add();
 
+                            if (dtl.EWT is not decimal.Zero) {
+                                pay.Invoices.DocEntry = dtl.EWTTransId;
+                                pay.Invoices.InvoiceType = SAPbobsCOM.BoRcptInvTypes.it_JournalEntry;
+                                pay.Invoices.SumApplied = -(double)dtl.EWT;
+                                pay.Invoices.Add();
+
+                            }
+
+
                         }
                     }
-                    else if (payment.Accounts.Count() > 0) {
-                        foreach (var dtl in payment.Accounts)
+                    else if (data.Accounts.Count() > 0) {
+                        foreach (var dtl in data.Accounts)
                         {
                             pay.AccountPayments.AccountCode = dtl.AcctCode;
                             pay.AccountPayments.SumPaid = (double)dtl.SumApplied;
@@ -133,10 +170,50 @@ namespace Disbursements.Library.COPS.Repositories
                         {
                             mode = "POST_PAYMENT",
                             docnum = docNum,
-                            opdata = payment.Header,
-                            invoicedata = payment.Invoices.ToDataTable()
+                            opdata = data.Header,
+                            invoicedata = data.Invoices.ToDataTable()
                         };
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+                    //OLD SP
+                    using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+                    {
+                        var storedProc = "spOPPost";
+                        var parameters = new
+                        {
+                            opnum = docNum,
+                            payee = data.Header.CWPayee,
+                            chkRmrks = data.Header.Comments,
+                            chkprint = data.Header.CheckPrintMode,
+                            EmpID = empCode,
+                            PMStat= data.Header.PaymentType,
+                            CAOAres = data.Header.OAReason,
+                            FBillNo = data.Header.F2307Bill
+                        };
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        if (data.Header.DocType == "A") {
+                            foreach (var item in data.Accounts)
+                            {
+                                var storedProc = "spOPVPM4";
+                                var parameters = new
+                                {
+                                    Docnum = docNum,
+                                    lineId = item.LineId,
+                                    Formatcode = item.AcctCode,
+                                    acctname = "",
+                                    sumapp = item.SumApplied,
+                                    descrip = item.Description,
+                                    whscode = item.BrCode,
+                                    ATCCode = item.ATC,
+                                    EWTAmt = item.EWT,
+                                    AtcRate =item.Rate,
+                                    TaxGrp =item.TaxGroup
+                                };
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            }
+                            
+                        }
                     }
 
                 }
@@ -232,6 +309,21 @@ namespace Disbursements.Library.COPS.Repositories
 
 
         }
+
+        public string GetVoucher(string branchCode,DateTime docDate)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                var storedProc = "HPCOMMON..spOPGetVOucher";
+                var parameters = new
+                {
+                    whs = branchCode,
+                    vdate = docDate
+                };
+                return cn.ExecuteScalar(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0).ToString();
+            }
+        }
+
 
         private void LogError(PaymentsErrorLogs log)
         {

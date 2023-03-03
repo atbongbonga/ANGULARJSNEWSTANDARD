@@ -10,10 +10,21 @@ namespace Disbursements.Library.COPS.ViewModels
     public class PaymentHeaderView : Payment
     {
         
+        public string U_HPDVoucherNo { get; set; }
         public string PMode { get; set; }
+        public string WhsCode { get; set; }
         public string BankCode { get; set; }
         public DateTime DueDate { get; set; }
         public string AcctCode { get; set; }
-        public string VoucherNo { get; set; }
+        public string CWPayee { get; set; }
+        public string F2307Bill { get; set; }
+        public string CheckPrintMode { get; set; }
+        public string PaymentType { get; set; }
+        public string TaxGroup { get; set; }
+        public string ATC { get; set; }
+        public string OAReason { get; set; }
+        public decimal TotalGross { get; set; }
+        public decimal TotalEWT { get; set; }
+        public decimal TotalNet { get; set; }
     }
 }
