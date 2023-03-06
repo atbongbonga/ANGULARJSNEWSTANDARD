@@ -17,6 +17,8 @@ using Core.Library.Models;
 using System.Reflection.PortableExecutable;
 using System.Net;
 using System.Security.Cryptography;
+using System.Runtime.InteropServices;
+using System.Diagnostics.Contracts;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -233,6 +235,123 @@ namespace Disbursements.Library.COPS.Repositories
          
         }
 
+        public void UpdatePayment(PaymentView payment) {
+            var data = GetPaymentData(payment);
+
+            using (var sap = new SAPBusinessOne()) {
+                try
+                {
+                    var pay = sap.VendorPayments;
+                    var jrnlEntry = sap.JournalEntries;
+                    pay.GetByKey(data.Header.DocNum);
+                   
+                    sap.BeginTran();
+
+                    //POST OP
+                    pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
+                    pay.Address = data.Header.Address;
+                    pay.JournalRemarks = data.Header.JrnlMemo;
+                    pay.DocDate = data.Header.DocDate;
+
+                    pay.CardCode = data.Header.CardCode;
+                    pay.CardName = data.Header.CardName;
+                    pay.DocType = data.Header.DocType == "S" ? SAPbobsCOM.BoRcptTypes.rSupplier : SAPbobsCOM.BoRcptTypes.rAccount;
+                    pay.DocCurrency = "PHP";
+                    pay.Remarks = data.Header.Comments;
+                    pay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
+                    pay.TaxDate = data.Header.DocDate;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_ChkNum;
+                    pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.U_CardCode;
+                    pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
+                    pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
+
+                    //BANK TRANSFER
+                    if (data.Header.TransferAmt is not decimal.Zero)
+                    {
+                        pay.TransferAccount = data.Header.BankCode;
+                        pay.TransferSum = (double)data.Header.DocTotal;
+                        pay.TransferDate = data.Header.DueDate;
+                        pay.PrimaryFormItems.PaymentMeans = SAPbobsCOM.PaymentMeansTypeEnum.pmtBankTransfer;
+                    }
+
+                    //CHECKS
+                    foreach (var item in data.Checks)
+                    {
+                        pay.Checks.SetCurrentLine(item.LineId);
+                        pay.Checks.Branch = item.AcctNum;
+                        pay.Checks.AccounttNum = item.AcctNum;
+                        pay.Checks.DueDate = item.DueDate;
+                        pay.Checks.CountryCode = "PHP";
+                        pay.Checks.BankCode = item.BankCode;
+                        pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                        pay.Checks.CheckAccount = item.CheckAcct;
+                        pay.Checks.CheckSum = (double)item.CheckAmt;
+                    }
+
+                    if (data.Invoices.Count() > 0)
+                    {
+                        foreach (var dtl in data.Invoices)
+                        {
+                            pay.Invoices.SetCurrentLine(dtl.LineId);
+                            pay.Invoices.DocEntry = dtl.DocEntry;
+                            pay.Invoices.InvoiceType = (SAPbobsCOM.BoRcptInvTypes)dtl.InvType;
+                            pay.Invoices.SumApplied = (double)dtl.SumApplied;
+
+                            if (dtl.EWT is not decimal.Zero)
+                            {
+                                pay.Invoices.SetCurrentLine(dtl.LineId);
+                                pay.Invoices.DocEntry = dtl.EWTTransId;
+                                pay.Invoices.InvoiceType = SAPbobsCOM.BoRcptInvTypes.it_JournalEntry;
+                                pay.Invoices.SumApplied = -(double)dtl.EWT;
+                            }
+
+
+                        }
+                    }
+                    else if (data.Accounts.Count() > 0)
+                    {
+                        foreach (var dtl in data.Accounts)
+                        {
+                            pay.AccountPayments.SetCurrentLine(dtl.LineId);
+                            pay.AccountPayments.AccountCode = dtl.AcctCode;
+                            pay.AccountPayments.SumPaid = (double)dtl.SumApplied;
+                            pay.AccountPayments.Decription = "WTAX";
+                        }
+                    }
+
+                    var returnValue = pay.Update();
+                    if (returnValue != 0) { 
+                    
+                    }
+                    sap.Commit();
+
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spOutgoingPayment";
+                        var parameters = new
+                        {
+                            mode = "UPDATE_PAYMENT",
+                            docnum = data.Header.DocNum,
+                            opdata = data.Header,
+                            invoicedata = data.Invoices.ToDataTable()
+                        };
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    sap.Rollback();
+
+                    LogError(new PaymentsErrorLogs
+                    {
+                        Module = "UPDATE PAYMENT",
+                        ErrorMsg = ex.GetBaseException().Message
+                    });
+                    throw new ApplicationException(ex.GetBaseException().Message);
+                }
+            }
+        }
         public void CancelPayment(int docNum)
         {
 
