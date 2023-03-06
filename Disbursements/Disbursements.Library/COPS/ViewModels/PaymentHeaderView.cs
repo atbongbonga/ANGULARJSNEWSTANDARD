@@ -26,5 +26,7 @@ namespace Disbursements.Library.COPS.ViewModels
         public decimal TotalGross { get; set; }
         public decimal TotalEWT { get; set; }
         public decimal TotalNet { get; set; }
+        public string PostedBy { get; set; }
+        public string CancelledBy { get; set; }
     }
 }
