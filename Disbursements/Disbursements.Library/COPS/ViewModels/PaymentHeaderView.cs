@@ -28,5 +28,7 @@ namespace Disbursements.Library.COPS.ViewModels
         public decimal TotalNet { get; set; }
         public string PostedBy { get; set; }
         public string CancelledBy { get; set; }
+        public string UpdatedBy { get; set; }
+        public DateTime LastUpdate { get; set; }
     }
 }
