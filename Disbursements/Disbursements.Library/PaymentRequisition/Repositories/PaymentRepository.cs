@@ -33,6 +33,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     { pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount; }
                     else pay.DocType = SAPbobsCOM.BoRcptTypes.rSupplier;
 
+
                     pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
                     pay.Address = payment.Header.Address;
                     pay.JournalRemarks = payment.Header.JrnlMemo;
@@ -41,13 +42,15 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     pay.DocDate = payment.Header.DocDate;
                     pay.DueDate = payment.Header.DocDueDate;
                     pay.DocCurrency = "PHP";
+                    pay.Remarks = payment.Header.Remarks;
                     pay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
                     pay.TaxDate = payment.Header.DocDate;
                     pay.UserFields.Fields.Item("U_ChkNum").Value = payment.Header.U_ChkNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = payment.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = payment.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.Header.U_HPDVoucherNo;
-
+                    pay.UserFields.Fields.Item("U_APDocNo").Value = "";
+                    pay.Reference2 = "";
 
                     if (payment.Header.PMeans.Equals("BANK TRANSFER"))
                     {

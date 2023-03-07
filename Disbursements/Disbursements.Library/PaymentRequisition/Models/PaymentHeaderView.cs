@@ -12,6 +12,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
     {
         public int Docentry { get; set; }
         public DateTime Docdate { get; set; }
+        public DateTime Duedate { get; set; }
         public string CardCode { get; set; }
         public string CardName { get; set; }
         public string Comments { get; set;}
@@ -30,5 +31,8 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public string PMeans { get; set; }
         public string ATC { get; set; }
         public string ATC2 { get; set; }
+        public string Remarks { get;set; }
+        public string WhsCode { get; set; }
+        public string BankCode { get; set; }
     }
 }
