@@ -24,9 +24,11 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public string AcctName { get; set; }
         public string PMode { get; set; }
         public string DocType { get; set;}
-
         public string PayNoDoc { get; set; }
         public decimal NoDocAmt { get; set; }
         public decimal Balance { get; set; }
+        public string PMeans { get; set; }
+        public string ATC { get; set; }
+        public string ATC2 { get; set; }
     }
 }

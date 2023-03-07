@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.PaymentRequisition.Models
 {
-    public class PaymentInvoiceView : PaymentInvoice
+    public class PaymentCreditCardView : PaymentCreditCard
     {
-        public decimal EWT { get; set; }
-        public int TransIDEWT { get; set; }
     }
-
 }

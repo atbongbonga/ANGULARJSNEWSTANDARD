@@ -9,5 +9,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
 {
     public class PaymentAccountView : PaymentAccount
     {
+        public string ATC { get; set; }
+        public decimal ATCRate { get; set; }
     }
 }
