@@ -33,9 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PF.Api", "PF\PF.Api\PF.Api.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PaymentRequisition", "PaymentRequisition", "{11204BFD-92A7-4642-B3F7-1E5ECD13C463}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PR.Library", "PR.Library\PR.Library.csproj", "{D4AEFC42-63B8-4647-AE71-5BBF4DEAF0FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PR.Library", "PR.Library\PR.Library.csproj", "{D4AEFC42-63B8-4647-AE71-5BBF4DEAF0FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PR.api", "PR.api\PR.api.csproj", "{F3AAA164-7A2E-4816-B54E-ADA701AED71A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PR.api", "PR.api\PR.api.csproj", "{F3AAA164-7A2E-4816-B54E-ADA701AED71A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
