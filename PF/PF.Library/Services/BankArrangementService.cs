@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PF.Library.Models;
+
 
 namespace PF.Library.Services
 {
@@ -17,9 +19,14 @@ namespace PF.Library.Services
             repo = new BankArrangementRepository(this.userCode);
         }
 
-        public void PostSetup(int docEntry) => repo.PostSetup(docEntry);
+        public void PostSetup(int docEntry) {
+            repo.PostSetup(docEntry);
+            repo.PostAccrual(docEntry);
+            repo.PostReversal(docEntry);
+        }
+
         public void PostAccrual(int docEntry) => repo.PostAccrual(docEntry);
         public void PostReversal(int docEntry) => repo.PostReversal(docEntry);
-        public void PostPayment(DateTime bankDate, IEnumerable<int> docEntries) => repo.PostPayment(bankDate, docEntries);
+        public void PostPayment(DateTime bankDate, List<PayTransModel> docEntries) => repo.PostPayment(bankDate, docEntries);
     }
 }

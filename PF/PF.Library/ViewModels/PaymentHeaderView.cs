@@ -14,5 +14,7 @@ namespace PF.Library.ViewModels
         public string AcctType { get; set; }
         public string PMode { get; set; }
         public string BankCode { get; set; }
+        public string AcctCode { get; set; }
+        public int BankEntry { get; set; }
     }
 }
