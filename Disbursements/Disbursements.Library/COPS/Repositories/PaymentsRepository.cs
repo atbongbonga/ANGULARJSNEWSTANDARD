@@ -12,7 +12,6 @@ using AccountingLegacy.Core.Library;
 using System.Data.SqlClient;
 using System.Data;
 using Disbursements.Library.COPS.Models;
-using Disbursements.Library.COPS.ViewModels;
 using Core.Library.Models;
 using System.Reflection.PortableExecutable;
 using System.Net;
