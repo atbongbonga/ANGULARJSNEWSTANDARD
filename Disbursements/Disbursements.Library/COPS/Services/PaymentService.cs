@@ -20,8 +20,12 @@ namespace Disbursements.Library.COPS.Services
         }
         public void PostPayment(PaymentView payment)
         {
-            if (payment.Header.DocNum == 0) repo.PostPayment(payment);   
-            else repo.UpdatePayment(payment);
+            repo.PostPayment(payment);   
+        }
+
+        public void UpdatePayment(PaymentHeaderView payment)
+        {
+            repo.UpdatePayment(payment);   
         }
         
         public void CancelPayment(int docNum) => repo.CancelPayment(docNum);

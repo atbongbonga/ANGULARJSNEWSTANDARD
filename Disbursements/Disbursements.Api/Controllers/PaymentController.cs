@@ -35,6 +35,20 @@ namespace Disbursements.Api.Controllers
             }
         }
 
+        [HttpPost, Route("update")]
+        public IActionResult UpdatePayment(PaymentHeaderView payment)
+        {
+            try
+            {
+                service.UpdatePayment(payment);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetBaseException().Message);
+            }
+        }
+
         [HttpPost, Route("cancel")]
         public IActionResult CancelPayment(int docNum)
         {
