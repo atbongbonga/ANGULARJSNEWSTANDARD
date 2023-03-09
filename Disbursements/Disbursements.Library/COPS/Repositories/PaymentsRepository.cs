@@ -160,7 +160,9 @@ namespace Disbursements.Library.COPS.Repositories
                     var returnValue = pay.Add();
                     var docNum = 0;
                     if (returnValue != 0) docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
-
+                    else { 
+                        throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                    }
                     sap.Commit();
 
                     using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
@@ -254,7 +256,7 @@ namespace Disbursements.Library.COPS.Repositories
 
                     var returnValue = pay.Update();
                     if (returnValue != 0) { 
-                    
+                        throw new ApplicationException(sap.Company.GetLastErrorDescription());
                     }
                     sap.Commit();
 
