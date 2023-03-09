@@ -10,7 +10,8 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
 {
     public class PaymentHeaderView : Payment
     {
-        public string PMode { get; set; }
+        public string BankCode { get; set; }
+        public string WhsCode { get; set; }
         public string PayTo { get; set; }
         public string CheckPrint { get; set; }
         public string CheckRemarks { get; set; }

@@ -49,7 +49,7 @@ namespace Disbursements.Library.COPS.Repositories
         private PaymentView GetPaymentData(PaymentView payment)
         {
             var output = new PaymentView();
-            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
 
                 using (var multi = cn.QueryMultiple
@@ -103,6 +103,8 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.U_CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
+                    //Additional Fields
+                    pay.TaxDate = data.Header.TaxDate;
 
                     //BANK TRANSFER
                     if (data.Header.TransferAmt is not decimal.Zero)
@@ -286,6 +288,7 @@ namespace Disbursements.Library.COPS.Repositories
                 }
             }
         }
+        
         public void CancelPayment(int docNum)
         {
 
@@ -377,10 +380,9 @@ namespace Disbursements.Library.COPS.Repositories
             }
         }
 
-
         private void LogError(PaymentsErrorLogs log)
         {
-            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 cn.Execute(
                     "spPaymentsError",

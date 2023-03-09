@@ -9,7 +9,9 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
 {
     public class PaymentAccountView : PaymentAccount
     {
-
+        public string AcctNo { get; set; }
+        public string InvNo { get; set; }
+        public string BrWhs { get; set; }
         public string GLAcct { get; set; }
         public string BrCode { get; set; }
         public DateTime BillDate { get; set; }
@@ -22,6 +24,8 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
         public decimal EWT { get; set; }
         public decimal ARAmt { get; set; }
         public string ARRemarks { get; set; }
+        public decimal WTE { get; set; }
+        public decimal ManualVat { get; set; }
 
     }
 }

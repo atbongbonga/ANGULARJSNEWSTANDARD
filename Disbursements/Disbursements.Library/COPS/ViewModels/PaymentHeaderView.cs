@@ -30,5 +30,7 @@ namespace Disbursements.Library.COPS.ViewModels
         public string CancelledBy { get; set; }
         public string UpdatedBy { get; set; }
         public DateTime LastUpdate { get; set; }
+        public DateTime TaxDate { get; set; }
+
     }
 }
