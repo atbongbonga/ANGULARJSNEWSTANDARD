@@ -9,6 +9,7 @@ namespace Disbursements.Library.PCF.ViewModels
 {
     public class JournalEntryHeaderView: JrnlEntry
     {
+        public int Docentry { get; set; }
         public string PCFOP { get; set; }
         public string PCFDoc { get; set; }
     }

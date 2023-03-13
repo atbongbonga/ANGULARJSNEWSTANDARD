@@ -11,6 +11,6 @@ namespace Disbursements.Library.PCF.ViewModels
     {
         //123
         public JournalEntryHeaderView Header { get; set; }
-        public List<JournalEntrDetailView> Details { get; set; }
+        public IEnumerable<JournalEntrDetailView> Details { get; set; }
     }
 }
