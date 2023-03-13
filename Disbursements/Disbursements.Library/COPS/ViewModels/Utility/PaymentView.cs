@@ -8,8 +8,10 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
 {
     internal class PaymentView
     {
-        public int UtilDocEntry { get; set; }
         public PaymentHeaderView Header { get; set; }
         public IEnumerable<PaymentAccountView> Accounts { get; set; }
+        public IEnumerable<PaymentCheckView>? Checks { get; set; }
+
+
     }
 }

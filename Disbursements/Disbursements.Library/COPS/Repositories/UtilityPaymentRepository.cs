@@ -69,17 +69,55 @@ namespace Disbursements.Library.COPS.Repositories
 
                     sap.BeginTran();
                     pay.CardName = data.Header.CardName;
-                    pay.Address = data.Header.PayTo;
-                    pay.JournalRemarks = data.Header.CardName;
+                    pay.Address = data.Header.Address;
+                    pay.JournalRemarks = data.Header.JrnlMemo;
                     pay.DocDate = data.Header.DocDate;
-                    pay.DueDate = data.Header.DocDate;
+                    pay.DueDate = data.Header.DocDueDate;
                     pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.Remarks = data.Header.Comments;
                     pay.UserFields.Fields.Item("U_Checknum").Value = data.Header.U_ChkNum is null ? "" : data.Header.U_ChkNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
-                    pay.Reference2 = Convert.ToString(data.UtilDocEntry);
+                    pay.Reference2 = data.Header.Ref2;
+
+                    if (data.Header.TransferAmt is not decimal.Zero)
+                    {
+                        pay.TransferAccount = data.Header.BankCode;
+                        pay.TransferSum = (double)data.Header.DocTotal;
+                        pay.TransferDate = data.Header.DocDate;
+                        pay.TransferReference = Convert.ToString(data.Header.OPUtilDocEntry);
+                        pay.PrimaryFormItems.PaymentMeans = SAPbobsCOM.PaymentMeansTypeEnum.pmtBankTransfer;
+                    }
+                    else if (data.Header.CreditAmt is not decimal.Zero) {
+                        pay.CreditCards.CreditCard = (int)data.Header.CreditCard;
+                        pay.CreditCards.CreditAcct = data.Header.CreditAcct;
+                        pay.CreditCards.PaymentMethodCode = 1;
+                        pay.CreditCards.CreditSum = (double)data.Header.CreditAmt;
+                        pay.CreditCards.VoucherNum = "1";
+                        pay.CreditCards.Add();
+                    }
+
+                    foreach (var item in data.Checks)
+                    {
+                        pay.Checks.Branch = item.Branch;
+                        pay.Checks.AccounttNum = item.AcctNum;
+                        pay.Checks.CountryCode = "PH";
+                        pay.Checks.BankCode = item.BankCode;
+                        pay.Checks.DueDate = item.DueDate;
+                        pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                        pay.Checks.CheckAccount = item.CheckAcct;
+                        pay.Checks.CheckSum = (double)item.CheckAmt;
+                    }
+
+                    foreach (var item in data.Accounts)
+                    {
+                        pay.AccountPayments.AccountCode = item.AcctCode;
+                        pay.AccountPayments.SumPaid = (double)item.SumApplied;
+                        pay.AccountPayments.Decription = item.Description;
+                        pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_DocLine;
+                        pay.AccountPayments.Add();
+                    }
 
 
                     sap.Commit();
