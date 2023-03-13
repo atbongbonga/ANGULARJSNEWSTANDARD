@@ -9,5 +9,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
 {
     public class PaymentCheckView : PaymentCheck
     {
+        public string CashAccount { get; set; }
+        public string ControlAccount { get; set; }
     }
 }

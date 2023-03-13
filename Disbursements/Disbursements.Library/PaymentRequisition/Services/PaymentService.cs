@@ -1,4 +1,5 @@
 ﻿using AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories;
+using Disbursements.Library.PaymentRequisition.Models;
 using Disbursements.Library.COPS.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,15 +12,17 @@ namespace Disbursements.Library.PaymentRequisition.Services
     public class PaymentService
     {
         private PaymentRepository repo = new PaymentRepository();
+        private readonly string userCode;
         public PaymentService(string userCode = "")
         {
+            this.userCode = userCode;
             repo = new PaymentRepository(userCode);
         }
-        public void PostPayment(int docEntry, int sapEntry, string cardCode)
+        public void PostPayment(PaymentView Model)
         {
             try
             {
-                repo.PostPayment(docEntry, sapEntry, cardCode);
+                repo.PostPayment(Model);
             }
             catch (Exception ex)
             {

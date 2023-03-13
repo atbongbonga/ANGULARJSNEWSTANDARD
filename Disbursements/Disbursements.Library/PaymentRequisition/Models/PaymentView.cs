@@ -14,5 +14,6 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public IEnumerable<PaymentCheckView> Checks { get; set; }
         public IEnumerable<PaymentCreditCardView> CreditCards { get; set; }
         public IEnumerable<PaymentInvoiceView> Invoices { get; set; }
+        public IEnumerable<PaymentATCView> PaymentATC { get; set; }
     }
 }

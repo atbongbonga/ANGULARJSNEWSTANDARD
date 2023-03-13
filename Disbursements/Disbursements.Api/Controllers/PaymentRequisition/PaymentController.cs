@@ -22,11 +22,11 @@ namespace Disbursements.Api.Controllers.PaymentRequisition
         }
 
         [HttpPost("payments/post")]
-        public IActionResult PostPayments(int docEntry, int sapEntry, string cardCode)
+        public IActionResult PostPayments(PaymentView Model)
         {
             try
             {
-                service.PostPayment(docEntry , sapEntry , cardCode);
+                service.PostPayment(Model);
                 return Ok();
             }
             catch (Exception ex)

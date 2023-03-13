@@ -9,5 +9,6 @@ namespace Disbursements.Library.PaymentRequisition.Models
 {
     public class PaymentCreditCardView : PaymentCreditCard
     {
+       
     }
 }
