@@ -255,12 +255,22 @@ namespace PF.Library.Repositories
                 {
                     using (var sap = new SAPBusinessOne())
                     {
+                        sap.BeginTran();
 
                         var pay = sap.VendorPayments;
-
                         pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                         pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
+                        pay.DocDate = header.DocDate;
+                        pay.DueDate = header.DocDueDate;
+                        pay.TaxDate = header.DocDate;
                         pay.CardName = header.CardName;
+                        pay.Remarks = header.Comments;
+                        pay.JournalRemarks = header.JrnlMemo;
+                        pay.DocCurrency = "PHP";
+                        pay.UserFields.Fields.Item("U_APDocNo").Value = header.U_APDocNo;
+                        pay.UserFields.Fields.Item("U_ChkNum").Value = header.U_ChkNum;
+                        pay.UserFields.Fields.Item("U_CardCode").Value = header.U_CardCode;
+                        pay.UserFields.Fields.Item("U_BranchCode").Value = header.U_BranchCode;
 
 
                         if (header.PMode.IndexOf("ATM") >= 0)
@@ -282,11 +292,6 @@ namespace PF.Library.Repositories
                             throw new ApplicationException("Payment mode not found.");
                         }
 
-                        pay.DocCurrency = "PHP";
-                        pay.UserFields.Fields.Item("U_ChkNum").Value = header.U_ChkNum;
-                        pay.UserFields.Fields.Item("U_CardCode").Value = header.U_CardCode;
-                        pay.UserFields.Fields.Item("U_BranchCode").Value = header.U_BranchCode;
-
                         //SETUP DETAILS OF SAP
                         foreach (var detail in data.Details.Where(x => x.DocNum == header.DocNum))
                         {
@@ -302,24 +307,26 @@ namespace PF.Library.Repositories
                         {
                             var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
-                            using (IDbConnection cn = new SqlConnection(server.SAP_PF2))
+                            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
                             {
                                 var storedProc = "spProfFees";
+                                var docs = data.DocEntries.Where(x => x.DocNum == header.DocNum).Select(x => new { Value = x.DocEntry });
                                 var parameters = new
                                 {
                                     mode = "POST_PAYMENT",
                                     empCode = empCode,
                                     type = header.AcctType,
                                     docNum = docNum,
-                                    docEntries = data.DocEntries.Where(x => x.DocNum == header.DocNum).Select(x => x.DocEntry).ToDataTable(),
+                                    docEntries = docs.ToDataTable(),
                                 };
 
                                 cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
-
+                            sap.Commit();
                         }
                         else
                         {
+                            sap.Rollback();
                             throw new ApplicationException(sap.Company.GetLastErrorDescription());
                         }
 
@@ -335,6 +342,7 @@ namespace PF.Library.Repositories
                 }
             }
         }
+
         private IEnumerable<JrnlEntryDetail> GetSetupTemplate(int docEntry)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_PF))
