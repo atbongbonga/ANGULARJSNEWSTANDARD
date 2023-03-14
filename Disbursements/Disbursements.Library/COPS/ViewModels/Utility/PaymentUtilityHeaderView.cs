@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.Utility
 {
-    public class PaymentHeaderView : Payment
+    public class PaymentUtilityHeaderView : Payment
     {
         public int? CreditCard { get; set; }
         public string CreditAcct { get; set; }

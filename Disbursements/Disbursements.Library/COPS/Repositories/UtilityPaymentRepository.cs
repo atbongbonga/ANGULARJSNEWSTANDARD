@@ -34,9 +34,9 @@ namespace Disbursements.Library.COPS.Repositories
             this.empCode = empCode;
         }
 
-          private PaymentView GetPaymentData(PaymentView payment)
+          private PaymentUtilityView GetPaymentData(PaymentUtilityView payment)
         {
-            var output = new PaymentView();
+            var output = new PaymentUtilityView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
 
@@ -51,13 +51,13 @@ namespace Disbursements.Library.COPS.Repositories
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
-                    output.Header = (PaymentHeaderView)multi.Read<PaymentHeaderView>();
-                    output.Accounts = multi.Read<PaymentAccountView>();
+                    output.Header = (PaymentUtilityHeaderView)multi.Read<PaymentUtilityHeaderView>();
+                    output.Accounts = multi.Read<PaymentUtilityAccountView>();
                     return output;
                 }
             }
         }
-        public void PostUtilityPayment(PaymentView payment)
+        public void PostUtilityPayment(PaymentUtilityView payment)
         {
             var data = GetPaymentData(payment);
 

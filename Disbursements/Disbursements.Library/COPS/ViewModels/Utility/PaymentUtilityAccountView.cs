@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.Utility
 {
-    public class PaymentAccountView : PaymentAccount
+    public class PaymentUtilityAccountView : PaymentAccount
     {
         public string AcctNo { get; set; }
         public string InvNo { get; set; }

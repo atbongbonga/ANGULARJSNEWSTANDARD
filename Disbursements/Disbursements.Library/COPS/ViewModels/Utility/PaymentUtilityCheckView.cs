@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.Utility
 {
-    public class PaymentCheckView
+    public class PaymentUtilityCheckView
     {
         public string Branch { get; set; }
         public string AcctNum { get; set; }

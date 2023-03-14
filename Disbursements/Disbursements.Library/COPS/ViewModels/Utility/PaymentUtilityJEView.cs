@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.COPS.ViewModels.Utility
 {
-    public class PaymentJEView
+    public class PaymentUtilityJEView
     {
         public string AcctCode { get; set; }
         public decimal Debit { get; set; }

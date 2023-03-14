@@ -23,11 +23,11 @@ namespace Disbursements.Api.Controllers
         }
 
         [HttpPost, Route("post")]
-        public IActionResult PostUtilityPayment(PaymentView payment)
+        public IActionResult PostUtilityPayment(PaymentUtilityView payment)
         {
             try
             {
-                service.PostPayment(payment);
+                service.PostUtilityPayment(payment);
                 return Ok();
             }
             catch (Exception ex)

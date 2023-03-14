@@ -16,7 +16,7 @@ namespace Disbursements.Library.COPS.Services
             this.userCode = userCode;
             repo = new UtilityPaymentRepository(this.userCode);
         }
-        public void PostUtilityPayment(PaymentView payment)
+        public void PostUtilityPayment(PaymentUtilityView payment)
         {
             repo.PostUtilityPayment(payment);
         }
