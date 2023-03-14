@@ -19,14 +19,16 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using System.Diagnostics.Contracts;
+using Microsoft.VisualBasic;
+using System.Xml.Linq;
 
 namespace Disbursements.Library.COPS.Repositories
 {
-    internal class UtilityPaymentRepository
+    public class UtilityPaymentRepository
     {
         private readonly SERVER server;
         private readonly string empCode;
-        public UtilityPaymentRepository()
+        public UtilityPaymentRepository(string empCode = "")
         {
             server = new SERVER("Outgoing Payment");
             this.empCode = empCode;
@@ -55,7 +57,7 @@ namespace Disbursements.Library.COPS.Repositories
                 }
             }
         }
-        public void PostPayment(PaymentView payment)
+        public void PostUtilityPayment(PaymentView payment)
         {
             var data = GetPaymentData(payment);
 
@@ -119,8 +121,128 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.AccountPayments.Add();
                     }
 
+                    var returnValue = pay.Add();
+                    var docNum = 0;
+                    if (returnValue != 0) docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
+                    else
+                    {
+                        throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                    }
+
+                    if (data.Header.AdvDueJE == 1) { 
+                        jrnlEntry = sap.JournalEntries;
+                        jrnlEntry.Reference = "CV" + docNum;
+                        jrnlEntry.TaxDate = data.Header.DocDate;
+                        jrnlEntry.DueDate = data.Header.DocDueDate;
+                        jrnlEntry.Memo = data.Header.Comments;
+
+                        foreach (var item in data.JournalEntries)
+                        {
+                            jrnlEntry.Lines.AccountCode = item.AcctCode;
+                            jrnlEntry.Lines.Debit = (double)item.Debit;
+                            jrnlEntry.Lines.Credit = (double)item.Credit;
+                            jrnlEntry.Lines.LineMemo = data.Header.Comments;
+                            jrnlEntry.Lines.Reference1 = "CV" + docNum;
+                            jrnlEntry.Lines.Add();
+                        }
+                        var JEReturnValue = jrnlEntry.Add();
+                        if (JEReturnValue != 0) 
+                        { 
+                            var JETransid = Convert.ToInt32(sap.Company.GetNewObjectKey()); 
+                        }
+                        else 
+                        {
+                            throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                        }
+
+                    }
 
                     sap.Commit();
+
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spUtilityPayment";
+                        var parameters = new
+                        {
+                            mode = "POST_UTILITY_PAYMENT",
+                            docnum = docNum,
+                            oputildocentry = data.Header.OPUtilDocEntry,
+                            opdata = data.Header,
+                            accountdata = data.Accounts,
+
+
+                        };
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+                    //OLD SP UPDATE
+                    //3.29
+                    using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+                    {
+                        var storedProc = "spOPPost";
+                        var parameters = new
+                        {
+                            opnum = docNum,
+                            payee = data.Header.CardName,
+                            chkRmrks = data.Header.CheckRemarks,
+                            chkprint = data.Header.CheckPrint,
+                            EmpID = empCode,
+                            CAOAres = data.Header.CAOARes,
+                            FBillNo = data.Header.FBillNo
+                        };
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        foreach (var item in data.Accounts)
+                        {
+                            var storedProc2 = "spOPVPM4";
+                            var parameters2 = new
+                            {
+                                Docnum = docNum,
+                                lineId = item.LineId,
+                                Formatcode = item.AcctCode,
+                                acctname = "",
+                                sumapp = item.SumApplied,
+                                descrip = item.Description,
+                                whscode = item.BrCode,
+                                ATCCode = item.ATC,
+                                EWTAmt = item.EWT,
+                                AtcRate = item.Rate,
+                                TaxGrp = item.TaxGroup
+                            };
+                            cn.Execute(storedProc2, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
+
+                        var storedProc3 = "spOPUtilJE";
+                        var parameters3 = new
+                        {
+                            Docnum = docNum
+                        };
+                        cn.Execute(storedProc3, parameters3, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+
+                        if (data.Header.CardName == "PETRON CORPORATION")
+                        {
+                            var qry = "UPDATE PetronLogs SET OPNum = " + docNum + " WHERE DocEntry IN(SELECT MAX(DocEntry) FROM PetronLogs) AND ISNULL(OPNum,0)= 0";
+                            cn.Execute(qry, "", commandType: CommandType.Text, commandTimeout: 0);
+                        }
+                    }
+
+                    //10.51
+                    if (data.Header.PCFDocNum != 0)
+                    {
+                        using (IDbConnection cn = new SqlConnection("192.171.10.51"))
+                        {
+                            var storedProc = "spOPUtil";
+                            var parameters = new
+                            {
+                                pcfdocnum = data.Header.PCFDocNum,
+                                oputildoc = data.Header.OPUtilDocEntry,
+
+                            };
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
+                    }
+                    //END OLD SP
+
                 }
                 catch (Exception ex)
                 {
