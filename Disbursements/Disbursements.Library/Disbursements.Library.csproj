@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="PaymentRequisition\Services\PaymentService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="SAPbobsCOM">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>8</VersionMinor>
@@ -44,7 +48,6 @@
   <ItemGroup>
     <Folder Include="Interfaces\Repositories\" />
     <Folder Include="PaymentRequisition\Models\" />
-    <Folder Include="PaymentRequisition\Services\" />
   </ItemGroup>
 
   <ItemGroup>
