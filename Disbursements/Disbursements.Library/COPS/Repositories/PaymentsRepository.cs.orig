@@ -194,7 +194,11 @@ namespace Disbursements.Library.COPS.Repositories
                         if (data.Header.DocType == "A") {
                             foreach (var item in data.Accounts)
                             {
+<<<<<<< HEAD
+                                storedProc = "spOPVPM4";
+=======
                                 var storedProc2 = "spOPVPM4";
+>>>>>>> f04fb388ec54e71c65aac66a9a8b580b580aa247
                                 var parameters2 = new
                                 {
                                     Docnum = docNum,

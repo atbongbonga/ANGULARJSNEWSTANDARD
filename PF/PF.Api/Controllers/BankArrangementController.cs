@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PF.Library.Services;
+using PF.Library.Models;
 using System.Security.Claims;
 
 namespace PF.Api.Controllers
@@ -62,11 +63,11 @@ namespace PF.Api.Controllers
         }
 
         [HttpPost, Route("payment/post")]
-        public IActionResult PostPayment(DateTime bank_date, [FromBody]IEnumerable<int> docentries)
+        public IActionResult PostPayment(DateTime bank_date,List<PayTransModel> docentries)
         {
             try
             {
-                service.PostPayment(bank_date, docentries);
+                //service.PostPayment(bank_date, docentries);
                 return Ok();
             }
             catch (Exception ex)

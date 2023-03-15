@@ -20,7 +20,7 @@ namespace Disbursements.Api.Controllers
             service = new PaymentService(userCode);
         }
 
-        [HttpPost, Route("payment/post")]
+        [HttpPost, Route("post")]
         public IActionResult PostPayment(PaymentView payment)
         {
             try
@@ -34,7 +34,7 @@ namespace Disbursements.Api.Controllers
             }
         }
 
-        [HttpPost, Route("payment/cancel")]
+        [HttpPost, Route("cancel")]
         public IActionResult CancelPayment(int docNum)
         {
             try

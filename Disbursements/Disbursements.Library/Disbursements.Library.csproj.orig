@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\Repositories\IAgencyRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="SAPbobsCOM">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>8</VersionMinor>
@@ -34,6 +38,8 @@
     <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
   </ItemGroup>
 
+<<<<<<< HEAD
+=======
   <ItemGroup>
     <Folder Include="Interfaces\Repositories\" />
     <Folder Include="PaymentRequisition\Models\" />
@@ -44,4 +50,5 @@
     <Folder Include="COPS\Models\" />
   </ItemGroup>
 
+>>>>>>> f04fb388ec54e71c65aac66a9a8b580b580aa247
 </Project>
