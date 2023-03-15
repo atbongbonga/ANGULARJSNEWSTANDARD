@@ -317,21 +317,21 @@ namespace PF.Library.Repositories
             using (IDbConnection cn = new SqlConnection(server.SAP_PF))
             {
 
-                using (var multi = cn.QueryMultiple
-                (
-                    "spProfFees",
-                    new
-                    {
-                        mode = "PAYMENT_TEMPLATE",
-                        docDate = bankDate,
-                        docEntries = docEntries.ToDataTable(),
-                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
-                )
-                {
-                    output.Headers = multi.Read<Payment>();
-                    output.Details = multi.Read<PaymentAccount>();
+                //using (var multi = cn.QueryMultiple
+                //(
+                //    "spProfFees",
+                //    new
+                //    {
+                //        mode = "PAYMENT_TEMPLATE",
+                //        docDate = bankDate,
+                //        docEntries = docEntries.ToDataTable(),
+                //    }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
+                //)
+                //{
+                //    output.Headers = multi.Read<Payment>();
+                //    output.Details = multi.Read<PaymentAccount>();
                     return output;
-                }
+                //}
             }
         }
 

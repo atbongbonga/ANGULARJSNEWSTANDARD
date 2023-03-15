@@ -195,8 +195,8 @@ namespace Disbursements.Library.COPS.Repositories
                         if (data.Header.DocType == "A") {
                             foreach (var item in data.Accounts)
                             {
-                                var storedProc = "spOPVPM4";
-                                var parameters = new
+                                storedProc = "spOPVPM4";
+                                var parameters2 = new
                                 {
                                     Docnum = docNum,
                                     lineId = item.LineId,
