@@ -8,8 +8,15 @@
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
+    <Compile Remove="PaymentRequisition\Services\**" />
     <EmbeddedResource Remove="OPUtils\**" />
+    <EmbeddedResource Remove="PaymentRequisition\Services\**" />
     <None Remove="OPUtils\**" />
+    <None Remove="PaymentRequisition\Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Interfaces\Repositories\IAgencyRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>
