@@ -16,6 +16,7 @@ using Disbursements.Library.PCF.Models;
 using System.Reflection.PortableExecutable;
 using System.Numerics;
 using System.Security.Principal;
+using MoreLinq;
 
 namespace Disbursements.Library.PCF.Repositories
 {
@@ -32,13 +33,16 @@ namespace Disbursements.Library.PCF.Repositories
         {
             try
             {
+
+                
                 var docEntry = UpdateData(data);
                 var jrnlEntry = GetTemplate(docEntry);
 
                 using (var sap = new SAPBusinessOne())
                 {
+                    sap.BeginTran();
                     var entry = sap.JournalEntries;
-                    entry.ReferenceDate = jrnlEntry.Header.RefDate;
+                    entry.ReferenceDate = jrnlEntry.Header.DocDate;
                     entry.Memo = jrnlEntry.Header.Memo.Trim();
                     entry.Reference = jrnlEntry.Header.Ref1.Trim();
                     entry.Reference2 = jrnlEntry.Header.Ref2.Trim();
@@ -56,8 +60,9 @@ namespace Disbursements.Library.PCF.Repositories
                         entry.Lines.Reference2 = item.Ref2;
                         entry.Lines.Add();
                     }
+                    var returnValue = entry.Add();
 
-                    if (entry.Add() == 0)
+                    if (returnValue == 0)
                     {
                         var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
@@ -69,7 +74,9 @@ namespace Disbursements.Library.PCF.Repositories
                                 mode = "POST_JE",
                                 transId = transId,
                                 pcfOP = jrnlEntry.Header.PCFOP,
-                                pcfDoc = jrnlEntry.Header.PCFDoc,
+                                pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+                                empCode = empCode,
+                                docEntry = docEntry
                             };
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
@@ -82,29 +89,34 @@ namespace Disbursements.Library.PCF.Repositories
                                 mode = PcfBuilder.spModeJEUpdateTables(),
                                 transId = transId,
                                 pcfOP = jrnlEntry.Header.PCFOP,
-                                pcfDoc = jrnlEntry.Header.PCFDoc,
+                                pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+
                             };
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                        }
 
+                        }
+                        sap.Commit();
                         return transId;
                     }
                     else
                     {
-                        throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                        var err = sap.Company.GetLastErrorDescription();
+                        sap.Rollback();
+                        throw new ApplicationException(err);
                     }
 
                 }
             }
             catch (Exception ex)
             {
+               
                 LogError(new PCFErrorLogs
                 {
                     Module = "PCF POST JE",
                     ErrorMsg = ex.GetBaseException().Message
                 });
-
+                
                 throw;
             }
         }
@@ -114,14 +126,20 @@ namespace Disbursements.Library.PCF.Repositories
             var output = new JrnlEntryView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
+                List<JournalEntryHeaderView> headerTable = new List<JournalEntryHeaderView>();
+
+                headerTable.Add(jrnlEntry.Header);
+
                 return cn.ExecuteScalar<int>(
                     "spPCFPosting",
                     new
                     {
                         mode = "UPDATE_JE",
-                        header = jrnlEntry.Header
-                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
-                );
+                        header = headerTable.ToDataTable(),
+                        details = jrnlEntry.Details.ToDataTable(),
+                        //docEntry = jrnlEntry.Header.Docentry
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+               
             }
         }
 
@@ -129,7 +147,7 @@ namespace Disbursements.Library.PCF.Repositories
         {
 
             var output = new JrnlEntryView();
-            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
 
                 using (var multi = cn.QueryMultiple
@@ -138,7 +156,7 @@ namespace Disbursements.Library.PCF.Repositories
                     new
                     {
                         mode = "GET_JE_TEMPLATE",
-                        @docEntry = docEntry,
+                        docEntry = docEntry,
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
@@ -149,6 +167,22 @@ namespace Disbursements.Library.PCF.Repositories
             }
 
     
+        }
+        private List<int> GetDocentriesByIp(string ipaddress)
+        {
+            using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+            {
+
+                return cn.Query<int>(
+                    "spPCFPosting",
+                    new
+                    {
+                        mode = "UPDATE_JE",
+                        ipaddress
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0).ToList();
+
+            }
+
         }
 
 

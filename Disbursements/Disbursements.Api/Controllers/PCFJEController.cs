@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Disbursements.Library.PCF.Services;
 using Disbursements.Library.PCF.ViewModels;
 using System.Security.Claims;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Disbursements.Api.Controllers
 {
-    [Route("api/pcfje")]
+    [Route("api/pcfje"), Authorize]
     [ApiController]
     public class PCFJEController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace Disbursements.Api.Controllers
             this.service = new JournalEntryService(userCode);
         }
 
-        [HttpPost("pcfje/post")]
+        [HttpPost("post")]
         public IActionResult PostJe(JrnlEntryView data)
         {
             try
