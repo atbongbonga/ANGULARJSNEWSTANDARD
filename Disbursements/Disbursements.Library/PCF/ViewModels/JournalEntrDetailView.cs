@@ -9,8 +9,12 @@ namespace Disbursements.Library.PCF.ViewModels
 {
     public class JournalEntrDetailView : JrnlEntryDetail
     {
-      public string AccountCode { get; set; }
-      public string FormatCode { get; set; }
-       
+        public int Docentry { get; set; }
+        public string AcctCode { get; set; } = string.Empty;
+        public string FormatCode { get; set; } = string.Empty;
+        public DateTime DocDate { get; set; }
+        public string BrCode { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+
     }
 }
