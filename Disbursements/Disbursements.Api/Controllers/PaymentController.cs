@@ -25,7 +25,22 @@ namespace Disbursements.Api.Controllers
         {
             try
             {
+              
                 service.PostPayment(payment);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetBaseException().Message);
+            }
+        }
+
+        [HttpPost, Route("update")]
+        public IActionResult UpdatePayment(PaymentHeaderView payment)
+        {
+            try
+            {
+                service.UpdatePayment(payment);
                 return Ok();
             }
             catch (Exception ex)
