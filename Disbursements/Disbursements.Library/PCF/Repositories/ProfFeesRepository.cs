@@ -10,7 +10,7 @@ namespace Disbursements.Library.PCF.Repositories
 {
     internal class ProfFeesRepository
     {
-        public void PostJrnlEntry(JrnlEntryVoew data)
+        public void PostJrnlEntry(JrnlEntryView data)
         {
 			try
 			{

@@ -1,5 +1,6 @@
 ﻿using AccountingLegacy.Disbursements.Library.COPS.Models;
 using AccountingLegacy.Disbursements.Library.COPS.ViewModels;
+using AccountingLegacy.Disbursements.Library.COPS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +9,8 @@ using System.Threading.Tasks;
 
 namespace AccountingLegacy.Disbursements.Library.Interfaces.Repositories
 {
-    public interface IAgencyRepository
+    public interface IOPRepository
     {
-        void SaveAgencies(IEnumerable<AgenciesImportedModel> agencies);
-        void PostAgencies(IEnumerable<AgenciesImportedModel> agencies);
-        IEnumerable<AgenciesImportedView> GetAgencies();
-        void RemoveAgencies(IEnumerable<AgenciesImportedModel> agencies);
+        void PostOP(OPPostingModel op);
     }
 }

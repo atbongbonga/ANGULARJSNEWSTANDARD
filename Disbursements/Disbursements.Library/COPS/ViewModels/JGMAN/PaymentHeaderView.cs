@@ -10,5 +10,7 @@ namespace Disbursements.Library.COPS.ViewModels.JGMAN
     public class PaymentHeaderView : Payment
     {
         public string AcctCode { get; set; }
+        public string PMode { get; set; }
+        public decimal Balance { get; set; }
     }
 }
