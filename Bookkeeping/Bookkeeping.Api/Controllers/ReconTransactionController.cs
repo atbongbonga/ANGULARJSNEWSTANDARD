@@ -14,7 +14,6 @@ namespace Bookkeeping.Api.Controllers
         private IConfiguration configuration;
         
         public ReconTransactionController(IConfiguration configuration)
-
         {
             this.configuration = configuration;
             service = new ReconTransactionService();

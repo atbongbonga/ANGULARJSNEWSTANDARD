@@ -14,7 +14,7 @@ using System.Xml.Linq;
 
 namespace Bookkeeping.Library.InternalRecon.Repositories
 {
-    internal class ReconTransactionRepository
+    public class ReconTransactionRepository
     {
         private readonly SERVER server;
 
