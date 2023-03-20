@@ -20,7 +20,7 @@ namespace Disbursements.Library.COPS.Services
         }
         public void PostPayment(PaymentView payment)
         {
-            repo.PostPayment(payment);   
+            repo.PostPayment(payment);
         }
 
         public void UpdatePayment(PaymentHeaderView payment)
