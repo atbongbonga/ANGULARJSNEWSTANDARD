@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace Core.Library.Models
         public string CheckAcct { get; set; }
         public decimal TransferAmt { get; set; }
         public string TransferAcct { get; set; }
+
         public DateTime? TransferDate { get; set; }
         public string Ref1 { get; set; }
         public string Ref2 { get; set; }
