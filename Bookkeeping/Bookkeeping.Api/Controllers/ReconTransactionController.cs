@@ -14,30 +14,18 @@ namespace Bookkeeping.Api.Controllers
         private IConfiguration configuration;
         
         public ReconTransactionController(IConfiguration configuration)
+
         {
             this.configuration = configuration;
             service = new ReconTransactionService();
         }
 
-        [HttpGet, Route("get_by_type")]
-        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(int transactionType)
+        [HttpGet, Route("get")]
+        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(int transactionType, string segment_0, string segment_1)
         {
             try
             {
-                return Ok(service.GetTransactions(transactionType));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.GetBaseException().Message);
-            }
-        }
-
-        [HttpGet, Route("get_by_account")]
-        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(string segment_0, string segment_1)
-        {
-            try
-            {
-                return Ok(service.GetTransactions(segment_0, segment_1));
+                return Ok(service.GetTransactions(transactionType, segment_0, segment_1));
             }
             catch (Exception ex)
             {
