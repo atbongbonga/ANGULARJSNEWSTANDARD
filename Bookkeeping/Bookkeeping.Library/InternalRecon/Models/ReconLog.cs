@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Models
 {
-    internal class ReconLog
+    public class ReconLog
     {
         public int DocEntry { get; set; }
         public string? EmpCode { get; set; }

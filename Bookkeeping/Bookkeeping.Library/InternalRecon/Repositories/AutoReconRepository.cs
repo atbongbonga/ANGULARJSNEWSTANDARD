@@ -3,6 +3,7 @@ using Bookkeeping.Library.InternalRecon.Models;
 using Bookkeeping.Library.InternalRecon.ViewModels;
 using Core.Library.Enums;
 using Dapper;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -68,6 +69,29 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                     error = _error
                 };
                 cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<int> GetTransactionRows(IEnumerable<AutoReconTransactionModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            var list = _transactions.Select(x => new AutoReconJEDetailsModel
+            {
+                TransId = x.TransId,
+                Line_ID = x.Line_ID
+            });
+
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spAutoInternalRecon";
+                var parameter = new
+                {
+                    mode = "GET_RECON_ROWS",
+                    jeDetails = list.ToDataTable(),
+                    segment_0 = segment_0,
+                    segment_1 = segment_1,
+                    reconDate = reconDate
+                };
+                return cn.Query<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
     }

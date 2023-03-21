@@ -44,5 +44,9 @@ namespace Bookkeeping.Library.InternalRecon.Services
             _repository.Log(_transaction, _error);
         }
 
+        public IEnumerable<int> GetTransactionRows(IEnumerable<AutoReconTransactionModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            return _repository.GetTransactionRows(_transactions, segment_0, segment_1, reconDate);
+        }
     }
 }
