@@ -9,12 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9869B410-6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bookkeeping", "Bookkeeping", "{CF0FBFFC-BEF5-447E-94AE-F19975A845A7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Billing", "Billing", "{EA150F4F-2139-429D-ADAB-A7179874DFB8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Collections", "Collections", "{8DC49FA9-75A3-4089-B874-00C504108B82}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HR", "HR", "{85159B2F-2C26-40B7-A5CB-30C0DB075C44}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bookkeeping.Library", "Bookkeeping\Bookkeeping.Library\Bookkeeping.Library.csproj", "{0B5463BF-0391-4FA1-8759-B24DA6861E92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Library", "Core\Core.Library\Core.Library.csproj", "{76C4EB3A-6A4C-4D32-8C9E-DD3F8508BB9C}"

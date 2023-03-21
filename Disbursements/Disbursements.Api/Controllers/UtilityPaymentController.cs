@@ -12,13 +12,13 @@ namespace Disbursements.Api.Controllers
 
     public class UtilityPaymentController : ControllerBase
     {
-        private UtilityPaymentService service;
+        private UtilityService service;
         private HttpContext httpContext;
         public UtilityPaymentController(IHttpContextAccessor accessor)
         {
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue("EmpCode");
-            service = new UtilityPaymentService(userCode);
+            service = new UtilityService(userCode);
 
         }
 

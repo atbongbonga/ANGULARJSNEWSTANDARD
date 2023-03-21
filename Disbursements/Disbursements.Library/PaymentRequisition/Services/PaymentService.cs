@@ -11,12 +11,12 @@ namespace Disbursements.Library.PaymentRequisition.Services
 {
     public class PaymentService
     {
-        private PaymentRepository repo = new PaymentRepository();
+        private AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories.PaymentRepository repo = new AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories.PaymentRepository();
         private readonly string userCode;
         public PaymentService(string userCode = "")
         {
             this.userCode = userCode;
-            repo = new PaymentRepository(userCode);
+            repo = new AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories.PaymentRepository(userCode);
         }
         public void PostPayment(PaymentView Model)
         {

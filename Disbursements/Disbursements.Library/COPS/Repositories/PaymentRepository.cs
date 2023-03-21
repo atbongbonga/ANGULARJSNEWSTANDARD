@@ -22,12 +22,12 @@ using System.Reflection;
 
 namespace Disbursements.Library.COPS.Repositories
 {
-    internal class PaymentsRepository
+    internal class PaymentRepository
     {
         private readonly SERVER server;
         private readonly string empCode;
 
-        public PaymentsRepository(string empCode="")
+        public PaymentRepository(string empCode="")
         {
             server = new SERVER("Outgoing Payment");
             this.empCode = empCode;

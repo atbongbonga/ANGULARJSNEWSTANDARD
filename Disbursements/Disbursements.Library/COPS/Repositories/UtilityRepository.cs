@@ -24,11 +24,11 @@ using System.Xml.Linq;
 
 namespace Disbursements.Library.COPS.Repositories
 {
-    public class UtilityPaymentRepository
+    public class UtilityRepository
     {
         private readonly SERVER server;
         private readonly string empCode;
-        public UtilityPaymentRepository(string empCode = "")
+        public UtilityRepository(string empCode = "")
         {
             server = new SERVER("Outgoing Payment");
             this.empCode = empCode;
