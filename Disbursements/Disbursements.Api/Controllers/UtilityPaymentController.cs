@@ -19,7 +19,7 @@ namespace Disbursements.Api.Controllers
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue("EmpCode");
             service = new UtilityPaymentService(userCode);
-
+              
         }
 
         [HttpPost, Route("post")]

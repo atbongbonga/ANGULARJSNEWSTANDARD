@@ -43,7 +43,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.JournalRemarks = result.Header.JrnlMemo;
                         pay.Remarks = result.Header.Comments;
                         pay.Reference2 = result.Header.Ref2;
-                        pay.UserFields.Fields.Item("U_ChkNum").Value = result.Header.U_ChkNum;
+                        pay.UserFields.Fields.Item("U_ChkNum").Value = result.Header.U_CheckNum;
                         pay.UserFields.Fields.Item("U_CardCode").Value = result.Header.U_CardCode;
                         pay.UserFields.Fields.Item("U_BranchCode").Value = result.Header.U_BranchCode;
                         pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = result.Header.U_HPDVoucherNo;

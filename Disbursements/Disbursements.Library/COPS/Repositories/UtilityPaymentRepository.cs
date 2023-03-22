@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics.Contracts;
 using Microsoft.VisualBasic;
 using System.Xml.Linq;
+using Disbursements.Library.COPS.ViewModels;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -34,25 +35,27 @@ namespace Disbursements.Library.COPS.Repositories
             this.empCode = empCode;
         }
 
-          private PaymentUtilityView GetPaymentData(PaymentUtilityView payment)
+        private PaymentUtilityView GetPaymentData(PaymentUtilityView payment)
         {
             var output = new PaymentUtilityView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-
+                var opdate = new  List<PaymentUtilityHeaderView> { payment.Header};
                 using (var multi = cn.QueryMultiple
                 (
                     "spUtilityPayment",
                     new
                     {
                         mode = "GET_UTILITY_PAYMENT_DATA",
-                        opdata = payment.Header,
+                        opdata = opdate.ToDataTable(),
                         accountdata = payment.Accounts.ToDataTable(),
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
-                    output.Header = (PaymentUtilityHeaderView)multi.Read<PaymentUtilityHeaderView>();
+                    output.Header = multi.ReadFirst<PaymentUtilityHeaderView>();
                     output.Accounts = multi.Read<PaymentUtilityAccountView>();
+                    output.Checks = multi.Read<PaymentUtilityCheckView>();
+                    output.JournalEntries = multi.Read<PaymentUtilityJEView>();
                     return output;
                 }
             }
@@ -77,7 +80,7 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.DueDate = data.Header.DocDueDate;
                     pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.Remarks = data.Header.Comments;
-                    pay.UserFields.Fields.Item("U_Checknum").Value = data.Header.U_ChkNum is null ? "" : data.Header.U_ChkNum;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_CheckNum is null ? "" : data.Header.U_CheckNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
@@ -189,7 +192,7 @@ namespace Disbursements.Library.COPS.Repositories
                             chkprint = data.Header.CheckPrint,
                             EmpID = empCode,
                             CAOAres = data.Header.CAOARes,
-                            FBillNo = data.Header.FBillNo
+                            BillNo = data.Header.FBillNo
                         };
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
