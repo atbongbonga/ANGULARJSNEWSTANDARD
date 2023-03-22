@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Dapper;
 using SAPbobsCOM;
 using System.Net;
+using Disbursements.Library.COPS.Models;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -31,7 +32,7 @@ namespace Disbursements.Library.COPS.Repositories
                 try
                 {
                     var result = GetPaymentView(item);
-                    using (var sap = new SAPBusinessOne("172.30.1.167"))
+                    using (var sap = new SAPBusinessOne("172.30.0.17"))
                     {
                         var pay = sap.VendorPayments;
                         pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
@@ -39,6 +40,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.DocDate = result.Header.DocDate;
                         pay.CardName = result.Header.CardName;
                         pay.TransferAccount = result.Header.AcctCode;
+                        pay.TransferSum = (double)result.Accounts.Sum(x => x.SumApplied);
                         pay.DocCurrency = "PHP";
                         pay.JournalRemarks = result.Header.JrnlMemo;
                         pay.Remarks = result.Header.Comments;
@@ -47,6 +49,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.UserFields.Fields.Item("U_CardCode").Value = result.Header.U_CardCode;
                         pay.UserFields.Fields.Item("U_BranchCode").Value = result.Header.U_BranchCode;
                         pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = result.Header.U_HPDVoucherNo;
+                        pay.UserFields.Fields.Item("U_APDocNo").Value = result.Header.U_APDocNo;
 
                         foreach (var account in result.Accounts)
                         {
@@ -97,6 +100,13 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
+
+                    LogError(new PaymentsErrorLogs
+                    {
+                        Module = "JGMAN-PAYMENT",
+                        ErrorMsg = ex.GetBaseException().Message
+                    });
+                    throw new ApplicationException(ex.GetBaseException().Message);
                     //log error
                 }
             }
@@ -153,6 +163,23 @@ namespace Disbursements.Library.COPS.Repositories
                     acctType = acctType,
                     branch = brCode
                 }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+        private void LogError(PaymentsErrorLogs log)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentsError",
+                    new
+                    {
+                        mode = "INSERT",
+                        module = log.Module,
+                        message = log.ErrorMsg,
+                        docEntry = log.DocEntry,
+                        remarks = log.Remarks,
+                        empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
 

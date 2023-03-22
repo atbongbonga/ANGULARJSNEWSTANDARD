@@ -11,16 +11,16 @@ namespace Disbursements.Library.COPS.Services
 {
     public class PaymentService
     {
-        private readonly PaymentsRepository repo;
+        private readonly PaymentRepository repo;
         private readonly string userCode;
         public PaymentService(string userCode = "")
         {
             this.userCode = userCode;
-            repo = new PaymentsRepository(this.userCode);
+            repo = new PaymentRepository(this.userCode);
         }
         public void PostPayment(PaymentView payment)
         {
-            repo.PostPayment(payment);   
+            repo.PostPayment(payment);
         }
 
         public void UpdatePayment(PaymentHeaderView payment)

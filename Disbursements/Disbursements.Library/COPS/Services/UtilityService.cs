@@ -7,14 +7,14 @@ using Disbursements.Library.COPS.Repositories;
 using Disbursements.Library.COPS.ViewModels.Utility;
 namespace Disbursements.Library.COPS.Services
 {
-    public class UtilityPaymentService
+    public class UtilityService
     {
-        private readonly UtilityPaymentRepository repo;
+        private readonly UtilityRepository repo;
         private readonly string userCode;
-        public UtilityPaymentService(string userCode = "")
+        public UtilityService(string userCode = "")
         {
             this.userCode = userCode;
-            repo = new UtilityPaymentRepository(this.userCode);
+            repo = new UtilityRepository(this.userCode);
         }
         public void PostUtilityPayment(PaymentUtilityView payment)
         {

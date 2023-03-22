@@ -1,28 +1,12 @@
 ﻿using AccountingLegacy.Core.Library;
-using AccountingLegacy.Disbursements.Library.Auth;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
 using MoreLinq;
-using SAPbobsCOM;
-using System.Reflection.Emit;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
-using System.Diagnostics;
-using AccountingLegacy;
 using AccountingLegacy.Disbursements.Library.PCF.Models;
 using AccountingLegacy.Disbursements.Library.PCF.ViewModels;
-using AccountingLegacy.Disbursements.Library.COPS.Repositories;
 using System.Data.SqlTypes;
-using System.Security.Principal;
-using System.Net;
-using System.Globalization;
-using System.Transactions;
-using System.Reflection;
+using Core.Library.Models;
 
 namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
 {
@@ -34,47 +18,6 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
         {
             server = new SERVER("PCF OP Posting");
         }
-
-        public string CheckIfPosted(PCFOPView model)
-        {
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
-                var storedProc = "spAL_PCFOPValidation";
-                var parameters = new
-                {
-                    Mode = "CheckIfPosted",
-                    CardName = model.Header.Payee,
-                    DocDate = model.Header.DocDate,
-                    Comments = model.Header.Remarks,
-                    ChkNo = model.Header.ChkNum,
-                    WhsCode = model.Header.BranchCode,
-                    Amount = model.Header.Total,
-                    PType = model.Header.PType,
-
-                };
-
-                return cn.QuerySingle<string>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
-        public string CheckLineIfPosted(string Status , string AcctCode , string WhsCode) {
-
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
-                var storedProc = "spAL_PCFOPValidation";
-                var parameters = new
-                {
-                    Mode = "CheckLineIfPosted",
-                    Status = Status,
-                    AcctCode = AcctCode,
-                    WhsCode = WhsCode
-
-                };
-
-                return cn.QuerySingle<string>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
         public string CheckBankDetail(int OPNum , string BankCode) {
 
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
@@ -91,56 +34,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public string CheckGLIfExist(string AcctCode)
-        {
-
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
-                var storedProc = "spAL_PCFOPValidation";
-                var parameters = new
-                {
-                    Mode = "CheckGLIfExist",
-                    AcctCode = AcctCode
-
-                };
-                return cn.QuerySingle<string>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
-        public string CheckGLIfExistByCodeWhs(string Bank , string WhsCode)
-        {
-
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
-                var storedProc = "spAL_PCFOPValidation";
-                var parameters = new
-                {
-                    Mode = "CheckGLIfExist",
-                    Bank = Bank,
-                    WhsCode = WhsCode
-
-                };
-                return cn.QuerySingle<string>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
-        public string CheckBankOwner(string BankCode)
-        {
-
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
-                var storedProc = "spAL_PCFOPValidation";
-                var parameters = new
-                {
-                    Mode = "CheckBankOwner",
-                    Bank = BankCode
-
-                };
-                return cn.QuerySingle<string>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
-        public void OPChangesLogs(string UserID) {
+        public void InsertChangesLogs(string UserID) {
 
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
@@ -167,7 +61,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public void OPPostVPM4Update(int OPNum , List<PCFPayDetail> model , string UserID) {
+        public void InsertVPM4New(int OPNum , List<PCFUserInputDetail> model , string UserID) {
 
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
@@ -224,7 +118,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             }
         }
 
-        public int UpsertPCFDetails(PCFOPView model) {
+        public int UpdatePCFTable(PCFUserInputView model) {
 
             using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
             {
@@ -251,7 +145,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                         TotalAmt = model.Header.Total,
                         SalesInvDate = "01/01/1900",
                         SalesInvDateReceive = "01/01/1900",
-                        Checknum = model.Header.ChkNum == null ? SqlString.Null : model.Header.ChkNum,
+                        Checknum = model.Header.ChkNum,
                         Si = SqlString.Null,
                         VFrom = "01/01/1900",
                         VTo = "01/01/1900"
@@ -286,7 +180,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
              }
         
         }
-        public int PostPCFOP(PCFOPView model) {
+        public int PostPCFOP(PCFUserInputView model) {
 
             using (var sap = new SAPBusinessOne()) {
 
@@ -297,109 +191,58 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 SAPbobsCOM.Payments oPay = (SAPbobsCOM.Payments)(sap.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oVendorPayments));
                 try
                 {
-                    CommonQryRepository common = new CommonQryRepository();
+                    PCFPostingHeaderTemplate Header = GetPostTemplateHeader(model);
+                 
                     oPay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
                     oPay.CardCode = "";
-                    oPay.CardName = model.Header.Payee;
-                    oPay.Address = model.Header.Addr;
-                    oPay.JournalRemarks = model.Header.Payee;
-                    oPay.DocDate = model.Header.DocDate;
+                    oPay.CardName = Header.Payee;
+                    oPay.Address = Header.Addr;
+                    oPay.JournalRemarks = Header.Payee;
+                    oPay.DocDate = Header.DocDate;
                     oPay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     oPay.DocCurrency = "PHP";
-                    oPay.Remarks = model.Header.Remarks;
+                    oPay.Remarks = Header.Remarks;
                     oPay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
-                    oPay.TaxDate = model.Header.DocDate;
-                    if (model.Header.ChkNum != null) { oPay.UserFields.Fields.Item("U_ChkNum").Value = model.Header.ChkNum; }
-                    if (model.Header.BranchCode != null) { oPay.UserFields.Fields.Item("U_BranchCode").Value = model.Header.BranchCode; }
-                    oPay.UserFields.Fields.Item("U_HPDVoucherNo").Value = common.GetVoucherNum(model.Header.BranchCode, model.Header.DocDate);
+                    oPay.TaxDate = Header.DocDate;
+                    oPay.UserFields.Fields.Item("U_ChkNum").Value = Header.ChkNum;
+                    oPay.UserFields.Fields.Item("U_BranchCode").Value = Header.BranchCode;
+                    oPay.UserFields.Fields.Item("U_HPDVoucherNo").Value = Header.VoucherNo;
 
-                    oPay.Checks.Branch = model.Header.WhsCode;
-                    oPay.Checks.AccounttNum = model.Header.WhsCode;
-                    oPay.Checks.DueDate = model.Header.DocDate;
+                    oPay.Checks.Branch = Header.WhsCode;
+                    oPay.Checks.AccounttNum = Header.WhsCode;
+                    oPay.Checks.DueDate = Header.DocDate;
                     oPay.Checks.CountryCode = "PH";
-                    oPay.Checks.BankCode = model.Header.Bank;
+                    oPay.Checks.BankCode = Header.Bank;
                     oPay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                    oPay.Checks.CheckAccount = common.GetAccountCode(model.Header.Bank + model.Header.WhsCode + "000");
-                    oPay.Checks.CheckSum = model.Header.Total - (model.Detail.Where(x => !string.IsNullOrEmpty(x.ATCCode) && x.WTax != 0).Select(x => x.WTax).DefaultIfEmpty().Sum());
+                    oPay.Checks.CheckAccount = Header.CheckAccount;
+                    oPay.Checks.CheckSum = Convert.ToDouble(Header.SummApplied);
                     oPay.Checks.Add();
 
-                    string BankOwner = CheckBankOwner(model.Header.Bank); //Check if has existing bank owner , raise error if not setup found.
                     int i = 0;
-                    int ln = 0;
                     foreach (var item in model.Detail) {
+                        // Get Template for Posting
+                        PCFPostGLAccountView GLAccounts = GetPostTemplateDetail(model.Header, item);
 
-                        item.AcctCode = item.AcctCode + item.WhsCode + "000";
-                        if (item.Amt != 0)
-                        {
-                            if (ln != 0) { oPay.AccountPayments.Add(); }
+                        foreach (var accountitem in GLAccounts.PaymentAccounts) {
 
-                            CheckGLIfExist(item.AcctCode);
-                            oPay.AccountPayments.AccountCode = common.GetAccountCode(item.AcctCode);//sap.GetAcct(item.AcctCode);
-                            oPay.AccountPayments.SumPaid = item.Amt;
-                            if (item.Descr.Length > 250)
-                            {
-                                item.Descr = item.Descr.Substring(0, 250);
-                            }
-                            oPay.AccountPayments.Decription = item.Descr;
+                            oPay.AccountPayments.AccountCode = accountitem.AcctCode;
+                            oPay.AccountPayments.SumPaid = Convert.ToDouble(accountitem.SumApplied);
+                            oPay.AccountPayments.Decription = accountitem.Description;
                             oPay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = i.ToString();
-                            ln += 1;
-
-                            // Post Total EWT
-                            if (!string.IsNullOrEmpty(item.ATCCode) && item.WTax != 0)
-                            {
-                                if (ln != 0) { oPay.AccountPayments.Add(); }
-                                oPay.AccountPayments.AccountCode = common.GetAccountCode("25200" + item.WhsCode + "000");
-                                oPay.AccountPayments.SumPaid = -item.WTax;
-                                oPay.AccountPayments.Decription = "WTAX - " + item.ATCCode;
-                              
-                                ln += 1;
-                            }
-
-                            string DueTo = "";
-                            string Advances = "";
-
-                            if (item.WhsCode != BankOwner) {
-
-                                CheckGLIfExistByCodeWhs(model.Header.Bank, item.WhsCode);
-                                DueTo = item.WhsCode;
-                                Advances = BankOwner;
-
-                                if (DueTo != "")
-                                {
-
-                                    //Advances GL Account
-                                    CheckGLIfExist("132" + item.WhsCode.Substring(item.WhsCode.Length - 2) + BankOwner + "000");
-                                    string AdvanceAcct = common.GetAccountCode("132" + item.WhsCode.Substring(item.WhsCode.Length - 2) + BankOwner + "000");
-
-                                    oPay.Checks.Branch = model.Header.WhsCode;
-                                    oPay.Checks.AccounttNum = model.Header.WhsCode;
-                                    oPay.Checks.DueDate = model.Header.DocDate;
-                                    oPay.Checks.CountryCode = "PH";
-                                    oPay.Checks.BankCode = "132" + item.WhsCode.Substring(item.WhsCode.Length - 2);
-                                    oPay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                                    oPay.Checks.CheckAccount = AdvanceAcct;
-                                    oPay.Checks.CheckSum = -(item.Amt - (string.IsNullOrEmpty(item.ATCCode) ? 0 : item.WTax));
-                                    oPay.Checks.Add();
-
-                                    //DueTo GL Account
-                                    CheckGLIfExist("231" + BankOwner.Substring(BankOwner.Length - 2) + item.WhsCode + "000");
-                                    string DueToAcct = common.GetAccountCode("231" + BankOwner.Substring(BankOwner.Length - 2) + item.WhsCode + "000");
-
-                                    oPay.Checks.Branch = model.Header.WhsCode;
-                                    oPay.Checks.AccounttNum = model.Header.WhsCode;
-                                    oPay.Checks.DueDate = model.Header.DocDate;
-                                    oPay.Checks.CountryCode = "PH";
-                                    oPay.Checks.BankCode = "231" + BankOwner.Substring(BankOwner.Length - 2);
-                                    oPay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                                    oPay.Checks.CheckAccount = DueToAcct;
-                                    oPay.Checks.CheckSum = item.Amt - (!string.IsNullOrEmpty(item.ATCCode) ? item.WTax : 0);
-                                    oPay.Checks.Add();
-
-                                }
-                            }
-
                         }
 
+                        foreach (var checkitem in GLAccounts.DuetoAdvancesAccounts) {
+
+                            oPay.Checks.Branch = checkitem.Branch;
+                            oPay.Checks.AccounttNum = checkitem.Branch;
+                            oPay.Checks.DueDate = checkitem.DueDate;
+                            oPay.Checks.CountryCode = checkitem.CountryCode;
+                            oPay.Checks.BankCode = checkitem.BankCode;
+                            oPay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                            oPay.Checks.CheckAccount = checkitem.CheckAccount;
+                            oPay.Checks.CheckSum = Convert.ToDouble(checkitem.Amount);
+                            oPay.Checks.Add();
+                        }
                         i += 1;
                     }
                     LRet = oPay.Add();
@@ -409,7 +252,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                         if (sap.Company.InTransaction) { sap.Company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit); }
                         string opnum = sap.Company.GetNewObjectKey();
 
-                        OPPostVPM4Update(Convert.ToInt32(opnum), model.Detail , model.Header.PostBy); // Execute stored proc. for table update
+                        InsertVPM4New(Convert.ToInt32(opnum), model.Detail , model.Header.PostBy); // Execute stored proc. for table update
                         return Convert.ToInt32(opnum);
                     }
                     else {
@@ -426,7 +269,7 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
             
         }
 
-        public int UpatePCFOP(PCFView model)
+        public int UpatePCFOPReference(PCFUserInputView model)
         {
             try
             {
@@ -460,6 +303,73 @@ namespace AccountingLegacy.Disbursements.Library.PCF.Repositories
                 throw;
             }
           
+        }
+
+        public PCFPostGLAccountView GetPostTemplateDetail(PCFUserInputHeader Header , PCFUserInputDetail Detail) {
+
+            PCFPostGLAccountView model = new PCFPostGLAccountView();
+            List<PCFStoredProcTableDetail> detail = new List<PCFStoredProcTableDetail>();
+         
+            detail.Add(new PCFStoredProcTableDetail
+            {
+                SAP = Detail.SAP,
+                AcctCode = Detail.AcctCode ,
+                WhsCode = Detail.WhsCode , 
+                ATCCode = Detail.ATCCode ,
+                WTax = Detail.WTax ,
+                Amt = Detail.Amt ,
+                Descr = Detail.Descr
+            });
+            
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                var reader = cn.QueryMultiple("spAL_GetPCFOPPostTemplate", 
+                             param: new 
+                             { Mode = "GetPostTemplateDetail",
+                               Bank = Header.Bank,
+                               PCFOPDetail = detail.ToDataTable()
+                             }, commandType: CommandType.StoredProcedure);
+                model.PaymentAccounts = reader.Read<PaymentAccount>().ToList();
+                model.DuetoAdvancesAccounts = reader.Read<PCFPostDuetoAdvanceAccounts>().ToList();
+            }
+            return model;
+        }
+        public PCFPostingHeaderTemplate GetPostTemplateHeader(PCFUserInputView model) {
+
+            List<PCFStoredProcTableHeader> Input = new List<PCFStoredProcTableHeader>();
+
+            Input.Add(new PCFStoredProcTableHeader
+            {
+                Payee = model.Header.Payee,
+                Addr = model.Header.Addr,
+                Remarks = model.Header.Remarks,
+                DocDate = model.Header.DocDate,
+                ChkNum = model.Header.ChkNum,
+                BranchCode = model.Header.BranchCode,
+                WhsCode = model.Header.WhsCode ,
+                Bank = model.Header.Bank,
+                Total = Convert.ToDecimal(model.Header.Total),
+                TaxAmount = Convert.ToDecimal(model.Detail.Where(x => !string.IsNullOrEmpty(x.ATCCode) && x.WTax != 0).Select(x => x.WTax).DefaultIfEmpty().Sum()),
+                PostBy = model.Header.PostBy
+
+            });
+
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                var storedProc = "spAL_GetPCFOPPostTemplate";
+                var parameters = new
+                {
+                    mode = "GetPostTemplateHeader",
+                    CardName = model.Header.Payee,
+                    DocDate = model.Header.DocDate,
+                    Comments = model.Header.Remarks,
+                    ChkNo = model.Header.ChkNum,
+                    WhsCode = model.Header.BranchCode,
+                    Amount = model.Header.Total,
+                    @PCFOPHeader = Input.ToDataTable()
+                };
+                return cn.QuerySingle<PCFPostingHeaderTemplate>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
         }
 
     }

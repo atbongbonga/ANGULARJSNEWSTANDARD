@@ -25,11 +25,11 @@ using Disbursements.Library.COPS.ViewModels;
 
 namespace Disbursements.Library.COPS.Repositories
 {
-    public class UtilityPaymentRepository
+    public class UtilityRepository
     {
         private readonly SERVER server;
         private readonly string empCode;
-        public UtilityPaymentRepository(string empCode = "")
+        public UtilityRepository(string empCode = "")
         {
             server = new SERVER("Outgoing Payment");
             this.empCode = empCode;
@@ -64,7 +64,7 @@ namespace Disbursements.Library.COPS.Repositories
         {
             var data = GetPaymentData(payment);
 
-            using (var sap = new SAPBusinessOne("172.30.1.167"))
+            using (var sap = new SAPBusinessOne())
             {
 
                 try
