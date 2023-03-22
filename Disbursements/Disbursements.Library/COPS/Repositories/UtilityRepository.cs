@@ -80,7 +80,7 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.DueDate = data.Header.DocDueDate;
                     pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.Remarks = data.Header.Comments;
-                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_CheckNum is null ? "" : data.Header.U_CheckNum;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_ChkNum is null ? "" : data.Header.U_ChkNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);

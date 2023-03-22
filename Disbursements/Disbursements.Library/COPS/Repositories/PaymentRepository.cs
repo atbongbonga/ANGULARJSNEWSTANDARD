@@ -102,7 +102,7 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.DocCurrency = "PHP";
                     pay.Remarks = data.Header.Comments;
                     pay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
-                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_CheckNum;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = string.IsNullOrEmpty(data.Header.U_ChkNum) == true ? "" : data.Header.U_ChkNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
@@ -186,7 +186,7 @@ namespace Disbursements.Library.COPS.Repositories
                         {
                             opnum = docNum,
                             payee = data.Header.CWPayee,
-                            chkRmrks = data.Header.Comments,
+                            chkRmrks = "",
                             chkprint = data.Header.CheckPrintMode,
                             EmpID = empCode,
                             PMStat= data.Header.PaymentType,
@@ -227,7 +227,7 @@ namespace Disbursements.Library.COPS.Repositories
 
                     //UPDATE OP
                     pay.UserFields.Fields.Item("U_APDocNo").Value = payment.U_APDocNo;
-                    pay.UserFields.Fields.Item("U_ChkNum").Value = payment.U_CheckNum;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = payment.U_ChkNum;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.U_HPDVoucherNo;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = payment.U_BranchCode;
                     pay.UserFields.Fields.Item("Comments").Value = payment.Comments;

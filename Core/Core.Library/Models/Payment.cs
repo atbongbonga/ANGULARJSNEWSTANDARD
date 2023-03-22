@@ -33,7 +33,7 @@ namespace Core.Library.Models
         public string Comments { get; set; }
         public string JrnlMemo { get; set; }
         public string U_APDocNo { get; set; }
-        public string U_CheckNum { get; set; }
+        public string U_ChkNum { get; set; }
         public string U_CardCode { get; set; }
         public string U_BranchCode { get; set; }
         public string U_HPDVoucherNo { get; set; }
