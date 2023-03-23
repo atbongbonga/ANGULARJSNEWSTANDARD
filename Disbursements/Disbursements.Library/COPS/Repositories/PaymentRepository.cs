@@ -117,18 +117,21 @@ namespace Disbursements.Library.COPS.Repositories
                     }
 
                     //CHECKS
-                    foreach (var item in data.Checks)
+                    if (data.Header.PMode == "CHECKS")
                     {
-                        pay.Checks.Branch = item.AcctNum;
-                        pay.Checks.AccounttNum = item.AcctNum;
-                        pay.Checks.DueDate = item.DueDate;
-                        pay.Checks.CountryCode = "PH";
-                        pay.Checks.BankCode = item.BankCode;
-                        pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                        pay.Checks.CheckAccount = item.CheckAcct;
-                        pay.Checks.CheckSum = (double)item.CheckAmt;
-                        pay.Checks.Add();
+                        foreach (var item in data.Checks)
+                        {
+                            pay.Checks.Branch = item.AcctNum;
+                            pay.Checks.AccounttNum = item.AcctNum;
+                            pay.Checks.DueDate = item.DueDate;
+                            pay.Checks.CountryCode = "PH";
+                            pay.Checks.BankCode = item.BankCode;
+                            pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                            pay.Checks.CheckAccount = item.CheckAcct;
+                            pay.Checks.CheckSum = (double)item.CheckAmt;
+                            pay.Checks.Add();
 
+                        }
                     }
 
                     if (data.Invoices.Count() > 0) {

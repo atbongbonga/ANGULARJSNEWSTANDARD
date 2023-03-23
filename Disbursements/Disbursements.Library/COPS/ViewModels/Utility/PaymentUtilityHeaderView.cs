@@ -28,5 +28,6 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
         public int AdvDueJE { get; set; }
         public string FBillNo { get; set; }
         public int? OPUtilDocEntry { get; set; }
+        public int OPId { get; set; }
     }
 }

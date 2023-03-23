@@ -28,6 +28,7 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
         public decimal WTE { get; set; }
         public bool ManualVat { get; set; }
         public int OPUtilDocEntry { get; set; }
+        public int DetId { get; set; }
 
     }
 }
