@@ -38,6 +38,19 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
+        public IEnumerable<TransactionTypeModel> GetTypes()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spAutoInternalRecon";
+                var parameter = new
+                {
+                    mode = "GET_TYPE"
+                };
+                return cn.Query<TransactionTypeModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
         public void Update(int _transactionType, int _groupNumber, DateTime _syncedDate)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
@@ -64,7 +77,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                     mode = "LOG",
                     groupNumber = _transaction.GroupNumber,
                     transactionType = _transaction.TransactionType,
-                    syncDate = _transaction.SyncedDate,
+                    syncedDate = _transaction.SyncedDate,
                     reconNumber = _transaction.ReconNum,
                     error = _error
                 };
@@ -89,8 +102,9 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                     jeDetails = list.ToDataTable(),
                     segment_0 = segment_0,
                     segment_1 = segment_1,
-                    reconDate = reconDate
+                    reconDate = reconDate.ToShortDateString()
                 };
+
                 return cn.Query<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }

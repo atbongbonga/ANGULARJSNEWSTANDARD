@@ -31,6 +31,19 @@ namespace Bookkeeping.Api.Controllers
             }
         }
 
+        [HttpGet, Route("get_type")]
+        public ActionResult<IEnumerable<AutoReconTransactionModel>> GetTypes()
+        {
+            try
+            {
+                return Ok(service.GetTypes());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetBaseException().Message);
+            }
+        }
+
         [HttpPost, Route("update")]
         public ActionResult Update(AutoReconTransactionModel transaction)
         {

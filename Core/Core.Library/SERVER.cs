@@ -22,7 +22,7 @@ namespace AccountingLegacy
             SAP_HPCOMMON_ = $"Data Source=172.30.0.17;Initial Catalog=HPCOMMON;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
             SAP_DISBURSEMENTS_ = $"Data Source=172.30.0.17;Initial Catalog=DISBURSEMENTS;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
             EMS_HPCOMMON_ = $"Data Source=192.171.10.51;Initial Catalog=HPCOMMON;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
-            SAP_BOOKKEEPING_ = $"Data Source=172.30.0.17;Initial Catalog=BOOKKEEPING;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={appName}";
+            SAP_BOOKKEEPING_ = $"Data Source=172.30.0.17;Initial Catalog=BOOKKEEPING;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
             SAP_PF_ = $"Data Source=172.30.0.17;Initial Catalog=PF;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
             SAP_PF2_ = $"Data Source=172.30.0.17;Initial Catalog=PF2;Integrated Security=False;UID=sapdb;PWD=sapdb; Application Name={ appName }";
         }

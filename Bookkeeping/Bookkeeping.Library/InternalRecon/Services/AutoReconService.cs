@@ -25,6 +25,11 @@ namespace Bookkeeping.Library.InternalRecon.Services
             return _repository.GetTransactions(_transactionType);
         }
 
+        public IEnumerable<TransactionTypeModel> GetTypes()
+        {
+            return _repository.GetTypes();
+        }
+
         public void Update(int _transactionType, int _groupNumber, DateTime _syncedDate)
         {
             if (_transactionType.Equals(default)) throw new ArgumentException("Transaction type cannot be zero.");
@@ -39,7 +44,6 @@ namespace Bookkeeping.Library.InternalRecon.Services
             if (_transaction.TransactionType.Equals(default)) throw new ArgumentException("Transaction type cannot be zero.");
             if (_transaction.GroupNumber.Equals(default)) throw new ArgumentException("Group number cannot be zero.");
             if (_transaction.SyncedDate.Equals(default)) throw new ArgumentException("Synced date is required.");
-            if (_transaction.ReconNum.Equals(default)) throw new ArgumentException("Group number cannot be zero.");
 
             _repository.Log(_transaction, _error);
         }
