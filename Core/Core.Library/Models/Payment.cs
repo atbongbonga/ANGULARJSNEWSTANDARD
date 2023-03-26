@@ -13,29 +13,29 @@ namespace Core.Library.Models
         public int DocNum { get; set; }
         public DateTime DocDate { get; set; }
         public DateTime DocDueDate { get; set; }
-        public string DocType { get; set; }
-        public string PayNoDoc { get; set; }
+        public string? DocType { get; set; }
+        public string? PayNoDoc { get; set; }
         public decimal NoDocAmt { get; set; }
-        public string CardCode { get; set; }
-        public string CardName { get; set; }
-        public string Address { get; set; }
+        public string? CardCode { get; set; }
+        public string? CardName { get; set; }
+        public string? Address { get; set; }
         public decimal DocTotal { get; set; }
         public decimal CashAmt { get; set; }
         public decimal CreditAmt { get; set; }
         public decimal CheckAmt { get; set; }
-        public string CheckAcct { get; set; }
+        public string? CheckAcct { get; set; }
         public decimal TransferAmt { get; set; }
-        public string TransferAcct { get; set; }
+        public string? TransferAcct { get; set; }
 
         public DateTime? TransferDate { get; set; }
-        public string Ref1 { get; set; }
-        public string Ref2 { get; set; }
-        public string Comments { get; set; }
-        public string JrnlMemo { get; set; }
-        public string U_APDocNo { get; set; }
-        public string U_ChkNum { get; set; }
-        public string U_CardCode { get; set; }
-        public string U_BranchCode { get; set; }
-        public string U_HPDVoucherNo { get; set; }
+        public string? Ref1 { get; set; }
+        public string? Ref2 { get; set; }
+        public string? Comments { get; set; }
+        public string? JrnlMemo { get; set; }
+        public string? U_APDocNo { get; set; }
+        public string? U_ChkNum { get; set; }
+        public string? U_CardCode { get; set; }
+        public string? U_BranchCode { get; set; }
+        public string? U_HPDVoucherNo { get; set; }
     }
 }
