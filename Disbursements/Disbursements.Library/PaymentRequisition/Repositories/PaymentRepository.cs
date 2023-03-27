@@ -111,7 +111,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 
                     }
 
-              
                     //Credit Card
                     if (payment.CreditCards.Count() > 0)
                     {
