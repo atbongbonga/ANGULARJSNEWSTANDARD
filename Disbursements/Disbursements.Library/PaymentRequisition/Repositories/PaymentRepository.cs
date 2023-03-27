@@ -97,7 +97,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 
                         foreach (var item in payment.Checks)
                         {
-
                             pay.Checks.Branch = item.Branch;
                             pay.Checks.AccounttNum = item.Branch;
                             pay.Checks.DueDate = payment.Header.DueDate;
@@ -111,7 +110,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 
                     }
 
-              
                     //Credit Card
                     if (payment.CreditCards.Count() > 0)
                     {
@@ -153,7 +151,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     {
                         var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
                         sap.Commit();
-                        PostPaymentRequest(sapEntry ,docNum, payment);
+                        PostPaymentRequest(sapEntry ,docNum, Model );
                     }
                     else
                     {
@@ -163,14 +161,14 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException(ex.GetBaseException().ToString());
+                throw new ApplicationException(ex.GetBaseException().Message);
             }
         }
 
         private PaymentView GetTemplate(PaymentView paramModel)
         {
             PaymentView model = new PaymentView();
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 try
                 {
@@ -186,19 +184,25 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                                      docTotal = paramModel.Header.DocTotal,
                                      ewtAmt = paramModel.Header.EWTAmount,
                                      ewtAmt2 = paramModel.Header.EWTAmount2,
+                                     pmode = paramModel.Header.PaymentMode,
+                                     accttype = paramModel.Header.AcctType,
+                                     dueDate = paramModel.Header.DueDate,
+                                     pmeans = paramModel.Header.PaymentMeans,
+                                     acctCode = paramModel.Header.AcctCode,
                                      UDTPaymentRequestAccount = paramModel.Accounts.ToDataTable(),
                                      UDTPaymentRequestInvoice = paramModel.Invoices.ToDataTable()
-                                 }, commandType: CommandType.StoredProcedure);
-                    model.Header = reader.Read<PaymentHeaderView>().Single();
+                                 }, commandType: CommandType.StoredProcedure); ; ;
+                    model.Header = reader.Read<PaymentHeaderView>().FirstOrDefault();
                     model.Accounts = reader.Read<PaymentAccountView>().ToList();
                     model.Checks = reader.Read<PaymentCheckView>().ToList();
                     model.CreditCards = reader.Read<PaymentCreditCardView>().ToList();
                     model.Invoices = reader.Read<PaymentInvoiceView>().ToList();
+                    model.PaymentATC = reader.Read<PaymentATCView>().ToList();
                     return model;
                 }
                 catch (Exception ex)
                 {
-                    throw new ApplicationException(ex.GetBaseException().ToString());
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
 
             }
@@ -207,15 +211,15 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public int InsertRequestPayment(PaymentView model)
         {
 
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
-                var oTransaction = cn.BeginTransaction();
+                if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
                 {
                     var storedProc = "spPaymentRequisition";
                     var parameters = new
                     {
-                        Mode = "INSERT_REQUEST_PAYMENT",
+                        mode = "INSERT_REQUEST_PAYMENT",
                         docEntry = model.Header.Docentry,
                         cardCode = model.Header.CardCode,
                         bankCode = model.Header.BankCode,
@@ -231,22 +235,21 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         cwPayee = model.Header.CWPayee
 
                     };
-                    var prDocentry = Convert.ToInt32(cn.ExecuteScalar(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0));
-                    oTransaction.Commit();
+                    var prDocentry = cn.ExecuteScalar<int>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    cn.Dispose();
                     return prDocentry;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    oTransaction.Rollback();
-                    throw;
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
             }
         }
         public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
         {
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
-           
+                if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
                 {
                     var storedProc = "spPaymentRequisition";
@@ -260,9 +263,8 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         pmode = payment.Header.PaymentMode,
                         atc = payment.Header.ATC,
                         atc2 = payment.Header.ATC2,
-                        UDTPaymentRequestAccount = payment.Accounts.ToDataTable(),
-                        atcCount = payment.PaymentATC.Count()
-
+                        docType = payment.Header.DocType,
+                        UDTPaymentRequestAccount = payment.Accounts.ToDataTable()
                     };
                     cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
@@ -276,11 +278,11 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         EmpID = this.userCode
                     };
                     cn.Execute(storedProc, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
+                    cn.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    throw new ApplicationException(ex.GetBaseException().ToString());
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
             }
         }
