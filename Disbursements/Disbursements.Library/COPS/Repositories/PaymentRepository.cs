@@ -38,7 +38,7 @@ namespace Disbursements.Library.COPS.Repositories
         {
             var data = GetPaymentData(payment);
 
-            using(var sap = new SAPBusinessOne("172.30.1.167"))
+            using(var sap = new SAPBusinessOne())
             {
 
                 try
