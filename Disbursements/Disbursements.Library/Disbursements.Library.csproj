@@ -4,12 +4,14 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64;x86</Platforms>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
+    <Compile Remove="PaymentRequisition\Services\**" />
     <EmbeddedResource Remove="OPUtils\**" />
+    <EmbeddedResource Remove="PaymentRequisition\Services\**" />
     <None Remove="OPUtils\**" />
   </ItemGroup>
 

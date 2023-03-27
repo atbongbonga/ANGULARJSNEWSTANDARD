@@ -7,13 +7,13 @@ using Disbursements.Library.COPS.Services;
 
 namespace Disbursements.Api.Controllers
 {
-    [ApiController, Route("api/payment"), Authorize]
+    [ApiController, Route("api/payments"), Authorize]
 
-    public class PaymentController : ControllerBase
+    public class PaymentsController : ControllerBase
     {
         private PaymentService service;
         private HttpContext httpContext;
-        public PaymentController(IHttpContextAccessor accessor)
+        public PaymentsController(IHttpContextAccessor accessor)
         {
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue("EmpCode");
@@ -26,6 +26,20 @@ namespace Disbursements.Api.Controllers
             try
             {
                 service.PostPayment(payment);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetBaseException().Message);
+            }
+        }
+
+        [HttpPost, Route("update")]
+        public IActionResult UpdatePayment(PaymentHeaderView payment)
+        {
+            try
+            {
+                service.UpdatePayment(payment);
                 return Ok();
             }
             catch (Exception ex)

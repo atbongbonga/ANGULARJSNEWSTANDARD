@@ -7,6 +7,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Auth\**" />
+    <Compile Remove="COPS\**" />
+    <Compile Remove="Interfaces\**" />
+    <Compile Remove="PaymentRequisition\**" />
+    <Compile Remove="PCF\**" />
+    <Content Remove="Auth\**" />
+    <Content Remove="COPS\**" />
+    <Content Remove="Interfaces\**" />
+    <Content Remove="PaymentRequisition\**" />
+    <Content Remove="PCF\**" />
+    <EmbeddedResource Remove="Auth\**" />
+    <EmbeddedResource Remove="COPS\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <EmbeddedResource Remove="PaymentRequisition\**" />
+    <EmbeddedResource Remove="PCF\**" />
+    <None Remove="Auth\**" />
+    <None Remove="COPS\**" />
+    <None Remove="Interfaces\**" />
+    <None Remove="PaymentRequisition\**" />
+    <None Remove="PCF\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.13" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.26.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
