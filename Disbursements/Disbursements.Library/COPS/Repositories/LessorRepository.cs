@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapper;
 using MoreLinq;
 using SAPbobsCOM;
+using Disbursements.Library.COPS.ViewModels.Lessor;
 using Disbursements.Library.COPS.ViewModels.Utility;
 using Disbursements.Library.COPS.Models;
 using AccountingLegacy.Core.Library;
@@ -22,14 +23,13 @@ using System.Diagnostics.Contracts;
 using Microsoft.VisualBasic;
 using System.Xml.Linq;
 
-
 namespace Disbursements.Library.COPS.Repositories
 {
-    public class UtilityRepository
+    public class LessorRepository
     {
         private readonly SERVER server;
         private readonly string empCode;
-        public UtilityRepository(string empCode = "")
+        public LessorRepository(string empCode = "")
         {
             server = new SERVER("Outgoing Payment");
             this.empCode = empCode;
@@ -60,7 +60,7 @@ namespace Disbursements.Library.COPS.Repositories
                 }
             }
         }
-        public void PostUtilityPayment(PaymentUtilityView payment)
+        public void PostLessorPayment(PaymentUtilityView payment)
         {
             var data = GetPaymentData(payment);
 
@@ -242,7 +242,7 @@ namespace Disbursements.Library.COPS.Repositories
 
                     LogError(new PaymentsErrorLogs
                     {
-                        Module = "UTILITY PAYMENT",
+                        Module = "LESSOR PAYMENT",
                         ErrorMsg = ex.GetBaseException().Message
                     });
                     throw new ApplicationException(ex.GetBaseException().Message);
