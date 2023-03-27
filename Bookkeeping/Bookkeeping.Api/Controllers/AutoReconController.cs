@@ -19,11 +19,11 @@ namespace Bookkeeping.Api.Controllers
         }
 
         [HttpGet, Route("get")]
-        public ActionResult<IEnumerable<AutoReconTransactionModel>> GetTransactions(int transactionType)
+        public ActionResult<IEnumerable<AutoReconTransactionModel>> GetTransactions(int transactionType, string segment_1, bool isRecon = false)
         {
             try
             {
-                return Ok(service.GetTransactions(transactionType));
+                return Ok(service.GetTransactions(transactionType, segment_1, isRecon));
             }
             catch (Exception ex)
             {

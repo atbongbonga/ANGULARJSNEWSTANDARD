@@ -24,7 +24,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             server = new SERVER("Auto Reconciliation");
         }
 
-        public IEnumerable<AutoReconTransactionModel> GetTransactions(int _transactionType)
+        public IEnumerable<AutoReconTransactionModel> GetTransactions(int _transactionType, string _segment_1, bool _isRecon)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -32,7 +32,9 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var parameter = new
                 {
                     mode = "GET",
-                    transactionType = _transactionType
+                    transactionType = _transactionType,
+                    segment_1 = _segment_1,
+                    isRecon = _isRecon
                 };
                 return cn.Query<AutoReconTransactionModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }

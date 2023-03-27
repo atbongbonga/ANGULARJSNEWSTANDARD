@@ -20,9 +20,9 @@ namespace Bookkeeping.Library.InternalRecon.Services
             _userId = userId;
         }
 
-        public IEnumerable<AutoReconTransactionModel> GetTransactions(int _transactionType)
+        public IEnumerable<AutoReconTransactionModel> GetTransactions(int _transactionType, string segment_1, bool isRecon)
         {
-            return _repository.GetTransactions(_transactionType);
+            return _repository.GetTransactions(_transactionType, segment_1, isRecon);
         }
 
         public IEnumerable<TransactionTypeModel> GetTypes()

@@ -18,6 +18,7 @@ namespace Bookkeeping.Library.InternalRecon.Models
         public DateTime RefDate { get; set; }
         public DateTime SyncedDate { get; set; }
         public DateTime ReconDate { get; set; }
+        public DateTime PostedDate { get; set; }
         public int SettlementId { get; set; }
         public int SettlementLineId { get; set; }
         public int ReconNum { get; set; }
