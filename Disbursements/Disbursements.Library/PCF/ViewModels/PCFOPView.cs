@@ -1,4 +1,6 @@
 ﻿using AccountingLegacy.Disbursements.Library.PCF.Models;
+using Core.Library.Models;
+using Disbursements.Library.PCF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +9,12 @@ using System.Threading.Tasks;
 
 namespace AccountingLegacy.Disbursements.Library.PCF.ViewModels
 {
-    public class PCFOPView : PCFOPModel
+    public class PCFOPView 
     {
-        public PCFPayHeader Header { get; set; }
-        public List<PCFPayDetail> Detail { get; set; }
-      
+        public PCFOPHeaderView Header { get; set; }
+        public List<PCFOPAccountsView> Accounts { get; set; }
+        public List<PCFOPChecksView> Checks { get; set; }
+
     }
 
-    public class PCFView { 
-        public PCFHdr Header { get; set; }
-        public List<PCFDtl> Detail { get; set; }
-    }
 }

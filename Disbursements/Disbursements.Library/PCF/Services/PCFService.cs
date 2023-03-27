@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Disbursements.Library.PCF.Services
 {
-    public class JournalEntryService
+    public class PCFService
     {
         private readonly JournalEntryRepository _repository;
         private readonly string userCode;
-        public JournalEntryService(string userCode = "")
+        public PCFService(string userCode = "")
         {
             this.userCode = userCode;
             _repository = new JournalEntryRepository(userCode);
@@ -23,13 +23,15 @@ namespace Disbursements.Library.PCF.Services
 
 
 
-        public int PostJrnlEntry(JrnlEntryView data)
+        public int PostJrnlEntry(PCFOP data)
         {
-
-       
             return _repository.PostJrnlEntry(data);
         }
 
+        public int PostPayment()
+        {
+            return 0;
+        }
  
 
 

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Disbursements.Library.PCF.Services;
 using Disbursements.Library.PCF.ViewModels;
 using System.Security.Claims;
@@ -7,26 +7,29 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Disbursements.Api.Controllers
 {
-    [Route("api/pcfje"), Authorize]
+    [Route("api/pcfop"), Authorize]
     [ApiController]
-    public class PCFJEController : ControllerBase
+    public class PCFOPController : Controller
     {
-        private HttpContext httpContext;
+           private HttpContext httpContext;
         private readonly PCFService service;
 
-        public PCFJEController(IHttpContextAccessor accessor)
+        public PCFOPController(IHttpContextAccessor accessor)
         {
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue(ClaimTypes.Sid);
             this.service = new PCFService(userCode);
         }
-
+        public IActionResult Index()
+        {
+            return View();
+        }
         [HttpPost("post")]
-        public IActionResult PostJe(JrnlEntryView data)
+        public IActionResult PostOP(PCFOP data)
         {
             try
             {
-                service.PostJrnlEntry(data);
+                service.PostPayment(data);
                 return Ok();
             }
             catch (Exception ex)
@@ -34,7 +37,5 @@ namespace Disbursements.Api.Controllers
                 return BadRequest(ex.GetBaseException().Message);
             }
         }
-
-
     }
 }
