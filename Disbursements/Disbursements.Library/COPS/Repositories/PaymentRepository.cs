@@ -145,23 +145,23 @@ namespace Disbursements.Library.COPS.Repositories
                     sap.Commit();
 
                     //OLD SP
-                    //using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
-                    //{
-                    //    var storedProc = "spOPPost";
-                    //    var parameters = new
-                    //    {
-                    //        opnum = docNum,
-                    //        payee = data.Header.CWPayee,
-                    //        chkRmrks = data.Header.Comments,
-                    //        chkprint = data.Header.CheckPrintMode,
-                    //        EmpID = empCode,
-                    //        PMStat= data.Header.PaymentType,
-                    //        CAOAres = data.Header.OAReason,
-                    //        BillNo = data.Header.F2307Bill
-                    //    };
-                    //    cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+                    {
+                        var storedProc = "spOPPost";
+                        var parameters = new
+                        {
+                            opnum = docNum,
+                            payee = data.Header.CWPayee,
+                            chkRmrks = data.Header.Comments,
+                            chkprint = data.Header.CheckPrintMode,
+                            EmpID = empCode,
+                            PMStat = data.Header.PaymentType,
+                            CAOAres = data.Header.OAReason,
+                            BillNo = data.Header.F2307Bill
+                        };
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-                    //}
+                    }
                     //END OLD SP
                 }
                 catch (Exception ex)
