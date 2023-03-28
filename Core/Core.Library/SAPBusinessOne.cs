@@ -34,7 +34,7 @@ namespace AccountingLegacy.Core.Library
                 this.company.CompanyDB = "HPDI";
                 this.company.DbUserName = "sapdb";
                 this.company.DbPassword = "sapdb";
-                this.company.UserName = "manager";
+                this.company.UserName = "beth";
                 this.company.Password = "12345";
                 //_company.UseTrusted = true;
                 this.company.language = BoSuppLangs.ln_English;
