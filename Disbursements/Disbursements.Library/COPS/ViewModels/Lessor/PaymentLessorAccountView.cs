@@ -14,7 +14,7 @@ namespace Disbursements.Library.COPS.ViewModels.Lessor
         public string TaxGroup { get; set; }
         public string ATC { get; set; }
         public decimal Rate { get; set; }
-        public decimal Vat { get; set; }
+        public decimal VAT { get; set; }
         public decimal NetVAT { get; set; }
         public decimal WTAX { get; set; }
         public decimal EWT { get; set; }

@@ -105,7 +105,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.CreditCards.Add();
                     }
 
-                    if (data.Header.PMode == "CHECKS") {
+                    if (data.Checks is not null && data.Checks.Count() > 0){
                         foreach (var item in data.Checks)
                         {
                             pay.Checks.Branch = item.Branch;
