@@ -4,6 +4,7 @@ using Disbursements.Library.PaymentRequisition.Models;
 using MoreLinq;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
 
 namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 {
@@ -168,6 +169,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         private PaymentView GetTemplate(PaymentView paramModel)
         {
             PaymentView model = new PaymentView();
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(paramModel.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 try
@@ -176,19 +178,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                                  param: new
                                  {
                                      Mode = "PAYMENT_TEMPLATE",
-                                     cardCode = paramModel.Header.CardCode,
-                                     docEntry = paramModel.Header.Docentry,
-                                     sapEntry = paramModel.Header.Sapentry,
-                                     payOnAcct = paramModel.Header.PayOnAccount,
-                                     controlAcct = paramModel.Header.ControlAccount ,
-                                     docTotal = paramModel.Header.DocTotal,
-                                     ewtAmt = paramModel.Header.EWTAmount,
-                                     ewtAmt2 = paramModel.Header.EWTAmount2,
-                                     pmode = paramModel.Header.PaymentMode,
-                                     accttype = paramModel.Header.AcctType,
-                                     dueDate = paramModel.Header.DueDate,
-                                     pmeans = paramModel.Header.PaymentMeans,
-                                     acctCode = paramModel.Header.AcctCode,
+                                     UDTPaymentRequestHeader = Header.ToDataTable(),
                                      UDTPaymentRequestAccount = paramModel.Accounts.ToDataTable(),
                                      UDTPaymentRequestInvoice = paramModel.Invoices.ToDataTable()
                                  }, commandType: CommandType.StoredProcedure); ; ;
@@ -210,7 +200,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         }
         public int InsertRequestPayment(PaymentView model)
         {
-
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
@@ -220,19 +210,8 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     var parameters = new
                     {
                         mode = "INSERT_REQUEST_PAYMENT",
-                        docEntry = model.Header.Docentry,
-                        cardCode = model.Header.CardCode,
-                        bankCode = model.Header.BankCode,
-                        bankName = model.Header.BankName,
-                        address = model.Header.Address,
-                        whsCode = model.Header.WhsCode,
-                        branchCode = model.Header.U_BranchCode,
                         userID = this.userCode,
-                        docType = model.Header.DocType,
-                        apDocNo = model.Header.U_APDocNo,
-                        checkPrint = model.Header.CheckPrint,
-                        checkRemarks = model.Header.CheckRemarks,
-                        cwPayee = model.Header.CWPayee
+                        UDTPaymentRequestHeader = Header.ToDataTable()
 
                     };
                     var prDocentry = cn.ExecuteScalar<int>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
@@ -247,6 +226,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         }
         public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
         {
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
@@ -257,13 +237,8 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     {
                         mode = "POST_PAYMENT_REQUEST",
                         opNum = docNum,
-                        docEntry = payment.Header.Docentry,
                         sapEntry = sapEntry,
-                        ewtAmt = payment.Header.EWTAmount,
-                        pmode = payment.Header.PaymentMode,
-                        atc = payment.Header.ATC,
-                        atc2 = payment.Header.ATC2,
-                        docType = payment.Header.DocType,
+                        UDTPaymentRequestHeader = Header.ToDataTable(),
                         UDTPaymentRequestAccount = payment.Accounts.ToDataTable()
                     };
                     cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);

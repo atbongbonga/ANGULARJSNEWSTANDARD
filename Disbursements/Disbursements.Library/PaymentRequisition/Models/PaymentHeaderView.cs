@@ -36,6 +36,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public decimal AccountAmount { get; set; }
         public string CWPayee { get; set; } = string.Empty;
         public string AcctType { get; set; } = string.Empty;
+        public string Bank { get; set; } = string.Empty;
 
     }
 }
