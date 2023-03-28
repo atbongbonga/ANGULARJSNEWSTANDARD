@@ -22,6 +22,7 @@ using System.Diagnostics.Contracts;
 using Microsoft.VisualBasic;
 using System.Xml.Linq;
 
+
 namespace Disbursements.Library.COPS.Repositories
 {
     public class UtilityRepository
@@ -34,25 +35,27 @@ namespace Disbursements.Library.COPS.Repositories
             this.empCode = empCode;
         }
 
-          private PaymentUtilityView GetPaymentData(PaymentUtilityView payment)
+        private PaymentUtilityView GetPaymentData(PaymentUtilityView payment)
         {
             var output = new PaymentUtilityView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-
+                var opdata = new  List<PaymentUtilityHeaderView> { payment.Header};
                 using (var multi = cn.QueryMultiple
                 (
                     "spUtilityPayment",
                     new
                     {
                         mode = "GET_UTILITY_PAYMENT_DATA",
-                        opdata = payment.Header,
+                        opdata = opdata.ToDataTable(),
                         accountdata = payment.Accounts.ToDataTable(),
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
-                    output.Header = (PaymentUtilityHeaderView)multi.Read<PaymentUtilityHeaderView>();
+                    output.Header = multi.ReadFirst<PaymentUtilityHeaderView>();
                     output.Accounts = multi.Read<PaymentUtilityAccountView>();
+                    output.Checks = multi.Read<PaymentUtilityCheckView>();
+                    output.JournalEntries = multi.Read<PaymentUtilityJEView>();
                     return output;
                 }
             }
@@ -75,9 +78,11 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.JournalRemarks = data.Header.JrnlMemo;
                     pay.DocDate = data.Header.DocDate;
                     pay.DueDate = data.Header.DocDueDate;
-                    pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
+                    //pay.TaxDate = data.Header.TaxDate;
+
+                    pay.DocType = BoRcptTypes.rAccount;
                     pay.Remarks = data.Header.Comments;
-                    pay.UserFields.Fields.Item("U_Checknum").Value = data.Header.U_ChkNum is null ? "" : data.Header.U_ChkNum;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_ChkNum is null ? "" : data.Header.U_ChkNum;
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
@@ -100,16 +105,18 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.CreditCards.Add();
                     }
 
-                    foreach (var item in data.Checks)
-                    {
-                        pay.Checks.Branch = item.Branch;
-                        pay.Checks.AccounttNum = item.AcctNum;
-                        pay.Checks.CountryCode = "PH";
-                        pay.Checks.BankCode = item.BankCode;
-                        pay.Checks.DueDate = item.DueDate;
-                        pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
-                        pay.Checks.CheckAccount = item.CheckAcct;
-                        pay.Checks.CheckSum = (double)item.CheckAmt;
+                    if (data.Checks is not null && data.Checks.Count() > 0){
+                        foreach (var item in data.Checks)
+                        {
+                            pay.Checks.Branch = item.Branch;
+                            pay.Checks.AccounttNum = item.AcctNum;
+                            pay.Checks.CountryCode = "PH";
+                            pay.Checks.BankCode = item.BankCode;
+                            pay.Checks.DueDate = item.DueDate;
+                            pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                            pay.Checks.CheckAccount = item.CheckAcct;
+                            pay.Checks.CheckSum = (double)item.CheckAmt;
+                        }
                     }
 
                     foreach (var item in data.Accounts)
@@ -117,7 +124,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.AccountPayments.AccountCode = item.AcctCode;
                         pay.AccountPayments.SumPaid = (double)item.SumApplied;
                         pay.AccountPayments.Decription = item.Description;
-                        pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_DocLine;
+                        //pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_DocLine;
                         pay.AccountPayments.Add();
                     }
 
@@ -125,7 +132,7 @@ namespace Disbursements.Library.COPS.Repositories
                     var docNum = 0;
                     if (returnValue == 0) {
                         docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
-                    } 
+                    }
                     else
                     {
                         throw new ApplicationException(sap.Company.GetLastErrorDescription());
@@ -159,23 +166,26 @@ namespace Disbursements.Library.COPS.Repositories
 
                     }
 
-                    sap.Commit();
 
                     using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                     {
                         var storedProc = "spUtilityPayment";
+                        var opdata = new List<PaymentUtilityHeaderView> { data.Header };
+
                         var parameters = new
                         {
                             mode = "POST_UTILITY_PAYMENT",
                             docnum = docNum,
+                            empid = empCode,
                             oputildocentry = data.Header.OPUtilDocEntry,
-                            opdata = data.Header,
-                            accountdata = data.Accounts,
-
-
+                            opdata = opdata.ToDataTable(),
+                            accountdata = data.Accounts.ToDataTable()
                         };
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     }
+
+                    sap.Commit();
+
                     //OLD SP UPDATE
                     //3.29
                     using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
@@ -189,29 +199,9 @@ namespace Disbursements.Library.COPS.Repositories
                             chkprint = data.Header.CheckPrint,
                             EmpID = empCode,
                             CAOAres = data.Header.CAOARes,
-                            FBillNo = data.Header.FBillNo
+                            BillNo = data.Header.FBillNo
                         };
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                        foreach (var item in data.Accounts)
-                        {
-                            var storedProc2 = "spOPVPM4";
-                            var parameters2 = new
-                            {
-                                Docnum = docNum,
-                                lineId = item.LineId,
-                                Formatcode = item.AcctCode,
-                                acctname = "",
-                                sumapp = item.SumApplied,
-                                descrip = item.Description,
-                                whscode = item.BrCode,
-                                ATCCode = item.ATC,
-                                EWTAmt = item.EWT,
-                                AtcRate = item.Rate,
-                                TaxGrp = item.TaxGroup
-                            };
-                            cn.Execute(storedProc2, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                        }
 
                         var storedProc3 = "spOPUtilJE";
                         var parameters3 = new

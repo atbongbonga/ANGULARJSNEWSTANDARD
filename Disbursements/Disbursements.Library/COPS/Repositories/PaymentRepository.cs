@@ -69,22 +69,26 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.Address = data.Header.Address;
                     pay.HandWritten = BoYesNoEnum.tNO;
                     pay.DocCurrency = "PHP";
+                    pay.Remarks = data.Header.Comments;
+                    pay.HandWritten = SAPbobsCOM.BoYesNoEnum.tNO;
+                    pay.UserFields.Fields.Item("U_ChkNum").Value = string.IsNullOrEmpty(data.Header.U_ChkNum) == true ? "" : data.Header.U_ChkNum;
+                    pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
+                    pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_ChkNum").Value = data.Header.U_ChkNum ?? "";
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode ?? "";
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode ?? "";
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
 
-                    //BANK TRANSFER
                     if (data.Header.PMode.Equals("BANK TRANSFER"))
                     {
-                        pay.TransferAccount = data.Header.TransferAcct;
-                        pay.TransferSum = (double)data.Header.TransferAmt;
+                        pay.TransferAccount = data.Header.AcctCode;
+                        pay.TransferSum = (double)data.Header.DocTotal;
                         pay.TransferDate = data.Header.TransferDate ?? data.Header.DocDate;
                         pay.PrimaryFormItems.PaymentMeans = PaymentMeansTypeEnum.pmtBankTransfer;
                     }
 
-                    //CHECKS
                     if (data.Checks is not null && data.Checks.Count() > 0)
+
                     {
                         foreach (var item in data.Checks)
                         {
@@ -93,7 +97,7 @@ namespace Disbursements.Library.COPS.Repositories
                             pay.Checks.DueDate = item.DueDate;
                             pay.Checks.CountryCode = "PH";
                             pay.Checks.BankCode = item.BankCode;
-                            pay.Checks.ManualCheck = BoYesNoEnum.tNO;
+                            pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
                             pay.Checks.CheckAccount = item.CheckAcct;
                             pay.Checks.CheckSum = (double)item.CheckAmt;
                             pay.Checks.Add();
@@ -145,6 +149,7 @@ namespace Disbursements.Library.COPS.Repositories
                     sap.Commit();
 
                     //OLD SP
+
                     using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
                     {
                         var storedProc = "spOPPost";
@@ -152,17 +157,16 @@ namespace Disbursements.Library.COPS.Repositories
                         {
                             opnum = docNum,
                             payee = data.Header.CWPayee,
-                            chkRmrks = data.Header.Comments,
+                            chkRmrks = "",
                             chkprint = data.Header.CheckPrintMode,
                             EmpID = empCode,
-                            PMStat = data.Header.PaymentType,
+                            PMStat= data.Header.PaymentType,
                             CAOAres = data.Header.OAReason,
                             BillNo = data.Header.F2307Bill
                         };
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                     }
-                    //END OLD SP
                 }
                 catch (Exception ex)
                 {
