@@ -27,6 +27,7 @@ namespace AccountingLegacy.Core.Library
             this.server = server;
             //this.srvr = new SERVER("SAP Business One");
             this.company = new Company();
+
             if (!this.company.Connected)
             {
                 this.company.DbServerType = BoDataServerTypes.dst_MSSQL2008;

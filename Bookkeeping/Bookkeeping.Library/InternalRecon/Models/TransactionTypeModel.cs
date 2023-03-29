@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Models
 {
-    public class ReconLog
+    public class TransactionTypeModel
     {
         public int DocEntry { get; set; }
-        public string? EmpCode { get; set; }
-        public string? ActionTaken { get; set; }
-        public DateTime DocDate { get; set; }
+        public string? Name { get; set; }
     }
 }

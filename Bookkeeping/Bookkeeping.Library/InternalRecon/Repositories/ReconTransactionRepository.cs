@@ -14,7 +14,7 @@ using System.Xml.Linq;
 
 namespace Bookkeeping.Library.InternalRecon.Repositories
 {
-    internal class ReconTransactionRepository
+    public class ReconTransactionRepository
     {
         private readonly SERVER server;
 
@@ -23,28 +23,15 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             server = new SERVER("Recon Transaction");
         }
 
-        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(int _transactionType)
+        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(int _transactionType, string _segment_0, string _segment_1)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
                 var parameter = new
                 {
-                    mode = "GET_BY_TYPE",
-                    type = _transactionType
-                };
-                return cn.Query<ReconTransactionViewModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
-        }
-
-        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(string _segment_0, string _segment_1)
-        {
-            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
-            {
-                var storedProc = "spInternalReconTransaction";
-                var parameter = new
-                {
-                    mode = "GET_BY_TYPE",
+                    mode = "GET",
+                    type = _transactionType,
                     segment_0 = _segment_0,
                     segment_1 = _segment_1
                 };
