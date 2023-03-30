@@ -23,7 +23,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             server = new SERVER("Recon Transaction");
         }
 
-        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(int _transactionType, string _segment_0, string _segment_1)
+        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(string _segment_0, string _segment_1)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -31,7 +31,6 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var parameter = new
                 {
                     mode = "GET",
-                    type = _transactionType,
                     segment_0 = _segment_0,
                     segment_1 = _segment_1
                 };
@@ -55,6 +54,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
 
         public IEnumerable<ReconTransactionModel> InsertTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
         {
+            foreach (var item in _data)
+            {
+                item.CanceledDate = DateTime.Now;
+                item.PostedDate = DateTime.Now;
+                item.ReconDate = DateTime.Now;
+            }
+
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
@@ -85,6 +91,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
 
         public void RemoveTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
         {
+            foreach (var item in _data)
+            {
+                item.CanceledDate = DateTime.Now;
+                item.PostedDate = DateTime.Now;
+                item.ReconDate = DateTime.Now;
+            }
+
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
