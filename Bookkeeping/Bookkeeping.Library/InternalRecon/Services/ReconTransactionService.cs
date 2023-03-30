@@ -20,12 +20,12 @@ namespace Bookkeeping.Library.InternalRecon.Services
             _userId = userId.Trim();
         }
 
-        public IEnumerable<ReconTransactionViewModel> GetTransactions(string segment_0, string segment_1)
+        public IEnumerable<ReconTransactionViewModel> GetTransactions(string segment_0, string segment_1, DateTime asOfDate)
         {
             if (string.IsNullOrEmpty(segment_0)) throw new ApplicationException("Segment_0 cannot be null or empty");
             if (string.IsNullOrEmpty(segment_1)) throw new ApplicationException("Segment_1 cannot be null or empty");
 
-            return _repository.GetReconTransactions(segment_0, segment_1);
+            return _repository.GetReconTransactions(segment_0, segment_1, asOfDate);
         }
 
         public IEnumerable<ReconTransactionModel> InsertTransations(IEnumerable<ReconTransactionModel> data)

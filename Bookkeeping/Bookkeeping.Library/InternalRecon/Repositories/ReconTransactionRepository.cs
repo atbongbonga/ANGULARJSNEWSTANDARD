@@ -23,7 +23,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             server = new SERVER("Recon Transaction");
         }
 
-        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(string _segment_0, string _segment_1)
+        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(string _segment_0, string _segment_1, DateTime _asOfDate)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -32,7 +32,8 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 {
                     mode = "GET",
                     segment_0 = _segment_0,
-                    segment_1 = _segment_1
+                    segment_1 = _segment_1,
+                    asOfDate = _asOfDate
                 };
                 return cn.Query<ReconTransactionViewModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }

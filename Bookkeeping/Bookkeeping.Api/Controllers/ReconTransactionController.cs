@@ -23,11 +23,11 @@ namespace Bookkeeping.Api.Controllers
         }
 
         [HttpGet, Route("get")]
-        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(string segment_0, string segment_1)
+        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(string segment_0, string segment_1, DateTime asOfDate)
         {
             try
             {
-                return Ok(service.GetTransactions(segment_0, segment_1));
+                return Ok(service.GetTransactions(segment_0, segment_1, asOfDate));
             }
             catch (Exception ex)
             {
