@@ -132,12 +132,12 @@ namespace Disbursements.Library.PCF.Repositories
                 {
                     Module = "PCF POST JE",
                     ErrorMsg = ex.GetBaseException().Message,
-                    DocEntry = jrnlEntry.Header.PCFOP
-                    remarks = log.Remarks,
-                    empCode = log.PostedBy
+                    DocEntry = data.Header.Docentry,
+                    Remarks = "",
+                    PostedBy = empCode
                 });
                 
-                throw;
+                throw ex;
             }
         }
 
