@@ -131,7 +131,10 @@ namespace Disbursements.Library.PCF.Repositories
                 LogError(new PCFErrorLogs
                 {
                     Module = "PCF POST JE",
-                    ErrorMsg = ex.GetBaseException().Message
+                    ErrorMsg = ex.GetBaseException().Message,
+                    DocEntry = jrnlEntry.Header.PCFOP
+                    remarks = log.Remarks,
+                    empCode = log.PostedBy
                 });
                 
                 throw;
@@ -199,7 +202,7 @@ namespace Disbursements.Library.PCF.Repositories
                         message = log.ErrorMsg,
                         docEntry = log.DocEntry,
                         remarks = log.Remarks,
-                        empCode = this.empCode
+                        empCode = log.PostedBy
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
