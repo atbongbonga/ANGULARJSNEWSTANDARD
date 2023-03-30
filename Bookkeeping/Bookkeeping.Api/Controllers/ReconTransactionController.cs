@@ -3,28 +3,31 @@ using Microsoft.AspNetCore.Mvc;
 using Bookkeeping.Library.InternalRecon.Services;
 using Bookkeeping.Library.InternalRecon.ViewModels;
 using Bookkeeping.Library.InternalRecon.Models;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Bookkeeping.Api.Controllers
 {
-    [Route("api/recon")]
+    [Route("api/recon/manual")]
     [ApiController]
     public class ReconTransactionController : ControllerBase
     {
         private readonly ReconTransactionService service;
-        private IConfiguration configuration;
-        
-        public ReconTransactionController(IConfiguration configuration)
+        private HttpContext httpContext;
+
+        public ReconTransactionController(IHttpContextAccessor accessor)
         {
-            this.configuration = configuration;
-            service = new ReconTransactionService();
+            httpContext = accessor.HttpContext!;
+            var userCode = httpContext.User.FindFirstValue("EmpCode");
+            service = new ReconTransactionService(userCode);
         }
 
         [HttpGet, Route("get")]
-        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(int transactionType, string segment_0, string segment_1)
+        public ActionResult<IEnumerable<ReconTransactionViewModel>> GetTransactions(string segment_0, string segment_1)
         {
             try
             {
-                return Ok(service.GetTransactions(transactionType, segment_0, segment_1));
+                return Ok(service.GetTransactions(segment_0, segment_1));
             }
             catch (Exception ex)
             {
@@ -33,12 +36,11 @@ namespace Bookkeeping.Api.Controllers
         }
 
         [HttpPost, Route("post")]
-        public ActionResult InsertTransations(IEnumerable<ReconTransactionModel> transactions)
+        public ActionResult InsertTransactions(IEnumerable<ReconTransactionModel> transactions)
         {
             try
             {
-                service.InsertTransations(transactions);
-                return Ok();
+                return Ok(service.InsertTransations(transactions));
             }
             catch (Exception ex)
             {

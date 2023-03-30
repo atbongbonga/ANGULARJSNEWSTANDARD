@@ -1,4 +1,5 @@
 ﻿using Bookkeeping.Library.InternalRecon.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
 {
     public class ReconTransactionViewModel : ReconTransactionModel
     {
+        public int Id { get; set; }
         public string? TransType { get; set; }
         public DateTime RefDate { get; set; }
         public string? Ref1 { get; set; }
@@ -20,6 +22,6 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
         public decimal BalDueDeb { get; set; }
         public decimal BalDueCred { get; set; }
         public string? AcctName { get; set; }
-        public bool OnDraft { get; set; }
+        public string? Status { get; set; }
     }
 }
