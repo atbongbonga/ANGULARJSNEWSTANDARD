@@ -12,25 +12,32 @@ namespace Disbursements.Library.PCF.Services
 {
     public class PCFService
     {
-        private readonly JournalEntryRepository _repository;
+        private readonly PCFRepository _repository;
         private readonly string userCode;
         public PCFService(string userCode = "")
         {
             this.userCode = userCode;
-            _repository = new JournalEntryRepository(userCode);
+            _repository = new PCFRepository(userCode);
         }
 
 
 
 
-        public int PostJrnlEntry(PCFOP data)
+        public int PostJrnlEntry(JrnlEntryView data)
         {
+
+            if (string.IsNullOrEmpty(data.Header.Memo)) throw new ApplicationException("Cannot access service, Remarks is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref1)) throw new ApplicationException("Cannot access service, Ref1 is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref2)) throw new ApplicationException("Cannot access service, Ref2 is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref3)) throw new ApplicationException("Cannot access service, Ref3 is required.");
+            if(data.Details.Sum(x => x.Amount) != 0) throw new ApplicationException("Total Debit and Credit must be equal.");
+
             return _repository.PostJrnlEntry(data);
         }
 
-        public int PostPayment()
+        public int PostPayment(PCFOP data)
         {
-            return 0;
+            return _repository.PostPayment(data);
         }
  
 
