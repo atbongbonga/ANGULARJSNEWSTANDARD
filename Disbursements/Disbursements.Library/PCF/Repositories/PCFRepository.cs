@@ -98,6 +98,21 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         }
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spJrnlEntryLogs";
+                            var parameters = new
+                            {
+                                mode = "PCFJrnlEntry",
+                                empID = empCode,
+                                transId = transId,
+                                module = "Copsweb CreateJE",
+
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        }
                         sap.Commit();
                         return transId;
                     }
@@ -189,7 +204,7 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
-        public int PostPayment(PCFOP data)
+        public int PostPayment(PCFOP data) 
         {
             try
             {
@@ -259,38 +274,17 @@ namespace Disbursements.Library.PCF.Repositories
 
 
                         }
-
                         var opEntryPcfovpm =  UpdateEmsServer(data);
-
-                       
-                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
-                        {
-                            List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
-
-                            headerTable.Add(data.Header);
-                             cn.ExecuteScalar<int>(
-                                   PcfBuilder.spPcfJE1051(),
-                                  new
-                                  {
-                                      mode = "POST_OP",
-                                      opHeader = headerTable.ToDataTable(),
-                                      opDetail = data.Detail.ToDataTable(),
-                                  
-                                  }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-
-
-                        }
-
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
+                            List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
+                            headerTable.Add(data.Header);
                             var storedProc = "spPCFPosting";
                             var parameters = new
                             {
                                 mode = "POST_OPpcf",
-                                opDetail = data.Detail,
-                                opNumber = transId,
-                                postBy = empCode,
+                                opHeader = headerTable.ToDataTable(),
+                                opEntryPcfovpm = opEntryPcfovpm
                             };
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
