@@ -67,7 +67,7 @@ namespace PF.Api.Controllers
         {
             try
             {
-                //service.PostPayment(bank_date, docentries);
+                service.PostPayment(bank_date, docentries);
                 return Ok();
             }
             catch (Exception ex)
