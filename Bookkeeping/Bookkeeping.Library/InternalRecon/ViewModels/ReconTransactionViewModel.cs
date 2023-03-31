@@ -23,5 +23,6 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
         public decimal BalDueCred { get; set; }
         public string? AcctName { get; set; }
         public string? Status { get; set; }
+        public string? FormatCode => $"{Segment_0}{Segment_1}000";
     }
 }
