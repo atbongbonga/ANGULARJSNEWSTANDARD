@@ -21,7 +21,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         {
             try
             {
-                //InsertRequestPayment(header.Docentry, header.CardCode);
                 var sapEntry = InsertRequestPayment(Model);
                 var payment = GetTemplate(Model);
                 using (var sap = new SAPBusinessOne("172.30.1.167"))
@@ -112,7 +111,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 
                     }
 
-              
                     //Credit Card
                     if (payment.CreditCards.Count() > 0)
                     {
@@ -188,9 +186,8 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                                      ewtAmt = paramModel.Header.EWTAmount,
                                      ewtAmt2 = paramModel.Header.EWTAmount2,
                                      UDTPaymentRequestAccount = paramModel.Accounts.ToDataTable(),
-                                     UDTPaymentRequestInvoice = paramModel.Invoices.ToDataTable(),
-                                     UDTPaymentRequestATC = paramModel.PaymentATC.ToDataTable()
-                                 }, commandType: CommandType.StoredProcedure); ; ;
+                                     UDTPaymentRequestInvoice = paramModel.Invoices.ToDataTable()
+                                 }, commandType: CommandType.StoredProcedure);
                     model.Header = reader.Read<PaymentHeaderView>().Single();
                     model.Accounts = reader.Read<PaymentAccountView>().ToList();
                     model.Checks = reader.Read<PaymentCheckView>().ToList();

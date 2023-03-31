@@ -12,6 +12,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public string ATC { get; set; } = string.Empty;
         public decimal EWT { get; set; }
         public int TransIDEWT { get; set; }
+        public string WhsCode { get; set; }
     }
 
 }
