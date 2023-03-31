@@ -9,9 +9,9 @@ namespace Disbursements.Api.Controllers
 {
     [Route("api/pcfop"), Authorize]
     [ApiController]
-    public class PCFOPController : Controller
+    public class PCFOPController : ControllerBase
     {
-           private HttpContext httpContext;
+        private HttpContext httpContext;
         private readonly PCFService service;
 
         public PCFOPController(IHttpContextAccessor accessor)
@@ -20,10 +20,8 @@ namespace Disbursements.Api.Controllers
             var userCode = httpContext.User.FindFirstValue(ClaimTypes.Sid);
             this.service = new PCFService(userCode);
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
+
+
         [HttpPost("post")]
         public IActionResult PostOP(PCFOP data)
         {

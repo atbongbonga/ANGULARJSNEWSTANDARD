@@ -35,8 +35,6 @@ namespace Disbursements.Library.PCF.Repositories
         {
             try
             {
-
-                
                 var docEntry = UpdateData(data);
                 var jrnlEntry = GetTemplate(docEntry);
 
@@ -143,7 +141,7 @@ namespace Disbursements.Library.PCF.Repositories
 
         private int UpdateData(JrnlEntryView jrnlEntry)
         {
-            var output = new JrnlEntryView();
+            //var output = new JrnlEntryView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 List<JournalEntryHeaderView> headerTable = new List<JournalEntryHeaderView>();
