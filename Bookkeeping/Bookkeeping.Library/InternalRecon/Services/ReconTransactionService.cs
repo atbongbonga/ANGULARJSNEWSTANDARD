@@ -91,5 +91,9 @@ namespace Bookkeeping.Library.InternalRecon.Services
             _repository.Log(_groupNumber, _error);
         }
 
+        public void AutoUpdate()
+        {
+            _repository.AutoUpdate();
+        }
     }
 }

@@ -177,5 +177,17 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
+        public void AutoUpdate()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "AUTO_UPDATE"
+                };
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
     }
 }

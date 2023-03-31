@@ -110,5 +110,19 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 return cn.Query<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
+
+        public void AutoUpdate()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spAutoInternalRecon";
+                var parameter = new
+                {
+                    mode = "AUTO_UPDATE"
+                };
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
     }
 }
