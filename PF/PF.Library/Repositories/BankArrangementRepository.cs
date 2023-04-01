@@ -270,8 +270,6 @@ namespace PF.Library.Repositories
                 {
                     using (var sap = new SAPBusinessOne())
                     {
-                        sap.BeginTran();
-
                         var pay = sap.VendorPayments;
                         pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                         pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
@@ -315,13 +313,10 @@ namespace PF.Library.Repositories
                             pay.AccountPayments.AccountCode = detail.AcctCode;
                             pay.AccountPayments.SumPaid = Convert.ToDouble(detail.SumApplied);
                             pay.AccountPayments.Decription = detail.Description;
-                            //pay.AccountPayments.UserFields.Fields.Item("U_EmpID").Value = header.U_CardCode;
                             pay.AccountPayments.Add();
                         }
 
                         int returnValue = pay.Add();
-                        sap.Commit();
-
                         if (returnValue == 0)
                         {
                             var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
