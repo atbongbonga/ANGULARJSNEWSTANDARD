@@ -132,9 +132,8 @@ namespace Disbursements.Library.PCF.Repositories
                 {
                     Module = "PCF POST JE",
                     ErrorMsg = ex.GetBaseException().Message,
-                    DocEntry = jrnlEntry.Header.PCFOP
-                    remarks = log.Remarks,
-                    empCode = log.PostedBy
+                    PostedBy = empCode
+                    
                 });
                 
                 throw;
@@ -200,8 +199,6 @@ namespace Disbursements.Library.PCF.Repositories
                         mode = "INSERT",
                         module = log.Module,
                         message = log.ErrorMsg,
-                        docEntry = log.DocEntry,
-                        remarks = log.Remarks,
                         empCode = log.PostedBy
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
@@ -312,8 +309,9 @@ namespace Disbursements.Library.PCF.Repositories
 
                 LogError(new PCFErrorLogs
                 {
-                    Module = "PCF POST JE",
-                    ErrorMsg = ex.GetBaseException().Message
+                    Module = "PCF POST OP",
+                    ErrorMsg = ex.GetBaseException().Message,
+                    PostedBy = empCode
                 });
 
                 throw;
