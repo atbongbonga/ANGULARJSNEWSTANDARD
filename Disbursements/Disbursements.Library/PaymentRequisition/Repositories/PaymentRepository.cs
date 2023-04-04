@@ -24,7 +24,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             {
                 var sapEntry = InsertRequestPayment(Model);
                 var payment = GetTemplate(Model);
-                using (var sap = new SAPBusinessOne("172.30.1.167"))
+                using (var sap = new SAPBusinessOne("172.30.0.17"))
                 {
                     var pay = sap.VendorPayments;
 
@@ -64,14 +64,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                             pay.AccountPayments.Decription = item.Description;
                             pay.AccountPayments.Add();
 
-                            if (item.EWT is not decimal.Zero)
-                            {
-                                pay.AccountPayments.AccountCode = item.AcctCode;
-                                pay.AccountPayments.SumPaid = Convert.ToDouble(item.EWT);
-                                pay.AccountPayments.Decription = item.Description;
-                                pay.AccountPayments.Add();
-
-                            }
                         }
                     }
 
@@ -170,7 +162,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         {
             PaymentView model = new PaymentView();
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(paramModel.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
             {
                 try
                 {
@@ -201,7 +193,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public int InsertRequestPayment(PaymentView model)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
@@ -227,7 +219,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
