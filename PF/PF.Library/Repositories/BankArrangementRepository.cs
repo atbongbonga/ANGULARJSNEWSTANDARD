@@ -280,6 +280,8 @@ namespace PF.Library.Repositories
                         pay.Remarks = header.Comments;
                         pay.JournalRemarks = header.JrnlMemo;
                         pay.DocCurrency = "PHP";
+                        pay.Reference1 = header.Ref1;
+                        pay.Reference2 = header.Ref2;
                         pay.UserFields.Fields.Item("U_APDocNo").Value = header.U_APDocNo;
                         pay.UserFields.Fields.Item("U_ChkNum").Value = header.U_ChkNum;
                         pay.UserFields.Fields.Item("U_CardCode").Value = header.U_CardCode;
