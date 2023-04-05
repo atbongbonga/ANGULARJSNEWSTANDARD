@@ -68,7 +68,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     // Set control and cash account for Payment on Acct Transaction.
-                    if (payment.Header.PayOnAccount)
+                    if (payment.Header.PayOnAccount && !payment.Header.PaymentMeans.Equals("BANK TRANSFER"))
                     {
                         pay.ControlAccount = payment.Header.ControlAccount;
                         pay.CashAccount = payment.Header.AcctCode;
@@ -154,6 +154,13 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             }
             catch (Exception ex)
             {
+                LogError(new PaymentsErrorLogs
+                {
+                    Module = "PAYMENT REQUISITION-PAYMENT",
+                    ErrorMsg = ex.GetBaseException().Message,
+                    DocEntry = Model.Header.Docentry,
+                    Remarks = "Payment Requisition Payment Posting Failed."
+                });
                 throw new ApplicationException(ex.GetBaseException().Message);
             }
         }
@@ -162,7 +169,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         {
             PaymentView model = new PaymentView();
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(paramModel.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 try
                 {
@@ -193,7 +200,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public int InsertRequestPayment(PaymentView model)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
@@ -219,7 +226,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
@@ -230,6 +237,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         mode = "POST_PAYMENT_REQUEST",
                         opNum = docNum,
                         sapEntry = sapEntry,
+                        userID = this.userCode,
                         UDTPaymentRequestHeader = Header.ToDataTable(),
                         UDTPaymentRequestAccount = payment.Accounts.ToDataTable()
                     };
@@ -253,7 +261,23 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                 }
             }
         }
-
+        private void LogError(PaymentsErrorLogs log)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentsError",
+                    new
+                    {
+                        mode = "INSERT",
+                        module = log.Module,
+                        message = log.ErrorMsg,
+                        docEntry = log.DocEntry,
+                        remarks = log.Remarks,
+                        empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
 
 
     }
