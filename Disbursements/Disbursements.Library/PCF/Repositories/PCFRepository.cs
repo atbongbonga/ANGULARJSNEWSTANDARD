@@ -335,12 +335,14 @@ namespace Disbursements.Library.PCF.Repositories
         {
             int result = 0;
 
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-            {
+            
 
                 try
                 {
-                    result = cn.ExecuteScalar<int>(
+                using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                {
+             
+                result = cn.ExecuteScalar<int>(
                          "spPCFPosting",
                          new
                          {
@@ -384,12 +386,12 @@ namespace Disbursements.Library.PCF.Repositories
                     }
 
                     PCFUpdateOP(opEntryPcfovpm, data.Header.OPNum.ToString());
-                    
-               
-              
+
+
 
 
                 }
+            }
 
 
 
@@ -403,7 +405,6 @@ namespace Disbursements.Library.PCF.Repositories
                 return result;
 
 
-            }
 
         }
 
