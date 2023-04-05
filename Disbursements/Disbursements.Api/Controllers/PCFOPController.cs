@@ -11,7 +11,7 @@ namespace Disbursements.Api.Controllers
     [ApiController]
     public class PCFOPController : ControllerBase
     {
-           private HttpContext httpContext;
+        private HttpContext httpContext;
         private readonly PCFService service;
 
         public PCFOPController(IHttpContextAccessor accessor)

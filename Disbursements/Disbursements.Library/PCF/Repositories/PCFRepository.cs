@@ -36,7 +36,7 @@ namespace Disbursements.Library.PCF.Repositories
             try
             {
 
-                
+
                 var docEntry = UpdateData(data);
                 var jrnlEntry = GetTemplate(docEntry);
 
@@ -49,7 +49,7 @@ namespace Disbursements.Library.PCF.Repositories
                     entry.Reference = jrnlEntry.Header.Ref1.Trim();
                     entry.Reference2 = jrnlEntry.Header.Ref2.Trim();
                     entry.UserFields.Fields.Item("U_FTDocNo").Value = docEntry.ToString();
-                    if(jrnlEntry.Header.Ref3 is not null) entry.Reference3 = jrnlEntry.Header.Ref3.Trim();
+                    if (jrnlEntry.Header.Ref3 is not null) entry.Reference3 = jrnlEntry.Header.Ref3.Trim();
 
                     foreach (var item in jrnlEntry.Details)
                     {
@@ -127,15 +127,15 @@ namespace Disbursements.Library.PCF.Repositories
             }
             catch (Exception ex)
             {
-               
+
                 LogError(new PCFErrorLogs
                 {
                     Module = "PCF POST JE",
                     ErrorMsg = ex.GetBaseException().Message,
                     PostedBy = empCode
-                    
+
                 });
-                
+
                 throw;
             }
         }
@@ -159,7 +159,7 @@ namespace Disbursements.Library.PCF.Repositories
                         details = jrnlEntry.Details.ToDataTable(),
                         //docEntry = jrnlEntry.Header.Docentry
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-               
+
             }
         }
 
@@ -180,13 +180,13 @@ namespace Disbursements.Library.PCF.Repositories
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
-                    output.Header =  multi.Read<JournalEntryHeaderView>().Single();
+                    output.Header = multi.Read<JournalEntryHeaderView>().Single();
                     output.Details = multi.Read<JournalEntrDetailView>();
                     return output;
                 }
             }
 
-    
+
         }
 
         private void LogError(PCFErrorLogs log)
@@ -205,7 +205,7 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
-        public int PostPayment(PCFOP data) 
+        public int PostPayment(PCFOP data)
         {
             try
             {
@@ -238,7 +238,7 @@ namespace Disbursements.Library.PCF.Repositories
                         entry.AccountPayments.SumPaid = Convert.ToDouble(item.SumPaid);
                         entry.AccountPayments.Decription = item.Description;
                         entry.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_Docline.ToString();
-                      
+
                     }
                     foreach (var item in model.Checks)
                     {
@@ -275,7 +275,7 @@ namespace Disbursements.Library.PCF.Repositories
 
 
                         }
-                        var opEntryPcfovpm =  UpdateEmsServer(data);
+                        var opEntryPcfovpm = UpdateEmsServer(data);
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
                             List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
@@ -296,7 +296,8 @@ namespace Disbursements.Library.PCF.Repositories
                             sap.Commit();
                             return transId;
                         }
-                        else {
+                        else
+                        {
                             var err = sap.Company.GetLastErrorDescription();
                             sap.Rollback();
                             throw new ApplicationException(err);
@@ -328,29 +329,29 @@ namespace Disbursements.Library.PCF.Repositories
             }
 
             return 0;
-        
+
         }
 
         public int TagPcfPayment(PCFOP data)
         {
             int result = 0;
 
-            
 
-                try
-                {
+
+            try
+            {
                 using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                 {
-             
-                result = cn.ExecuteScalar<int>(
-                         "spPCFPosting",
-                         new
-                         {
-                             mode = "POST_TAG_PCFPAYMENT",
-                             opNumber = data.Header.OPNum,
-                             bank = data.Header.Bank,
-                             //docEntry = jrnlEntry.Header.Docentry
-                         }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                    result = cn.ExecuteScalar<int>(
+                             "spPCFPosting",
+                             new
+                             {
+                                 mode = "POST_TAG_PCFPAYMENT",
+                                 opNumber = data.Header.OPNum,
+                                 bank = data.Header.Bank,
+                                 //docEntry = jrnlEntry.Header.Docentry
+                             }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
 
                     using (IDbConnection cn1 = new SqlConnection(server.SAP_DISBURSEMENTS))
@@ -396,13 +397,13 @@ namespace Disbursements.Library.PCF.Repositories
 
 
 
-                catch (Exception e)
-                {
+            catch (Exception e)
+            {
 
-                    throw e;
-                }
+                throw e;
+            }
 
-                return result;
+            return result;
 
 
 
@@ -427,7 +428,7 @@ namespace Disbursements.Library.PCF.Repositories
                 {
                     throw new ApplicationException("OPentry not found.");
                 }
-                
+
 
             }
             return true;
@@ -440,50 +441,51 @@ namespace Disbursements.Library.PCF.Repositories
             {
                 List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
                 headerTable.Add(data.Header);
-               return  cn.ExecuteScalar<int>(
-                      PcfBuilder.spPcfJE1051(),
-                     new
-                     {
-                         mode = "POST_OP",
-                         opHeader = headerTable.ToDataTable(),
-                         opDetail = data.Detail.ToDataTable(),
+                return cn.ExecuteScalar<int>(
+                       PcfBuilder.spPcfJE1051(),
+                      new
+                      {
+                          mode = "POST_OP",
+                          opHeader = headerTable.ToDataTable(),
+                          opDetail = data.Detail.ToDataTable(),
 
-                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                      }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
             }
         }
 
 
-        private PCFOPView GetPaymentTemplate(PCFOP data) {
+        private PCFOPView GetPaymentTemplate(PCFOP data)
+        {
 
             List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
 
             headerTable.Add(data.Header);
 
             var output = new PCFOPView();
-                using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+
+                using (var multi = cn.QueryMultiple
+                (
+                    "spPCFPosting",
+            new
+            {
+                mode = "GET_POSTOP_TEMPLATE",
+                opHeader = headerTable.ToDataTable(),
+                opDetail = data.Detail.ToDataTable(),
+            }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
+                )
                 {
-
-                    using (var multi = cn.QueryMultiple
-                    (
-                        "spPCFPosting",
-                new
-                        {
-                            mode = "GET_POSTOP_TEMPLATE",
-                            opHeader = headerTable.ToDataTable(),
-                            opDetail = data.Detail.ToDataTable(),
-                        }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
-                    )
-                    {
-                        output.Header = multi.Read<PCFOPHeaderView>().Single();
-                        output.Accounts = multi.Read<PCFOPAccountsView>().ToList();
-                        output.Checks = multi.Read<PCFOPChecksView>().ToList();
+                    output.Header = multi.Read<PCFOPHeaderView>().Single();
+                    output.Accounts = multi.Read<PCFOPAccountsView>().ToList();
+                    output.Checks = multi.Read<PCFOPChecksView>().ToList();
                     return output;
-                    }
                 }
+            }
 
 
-            
+
 
         }
 

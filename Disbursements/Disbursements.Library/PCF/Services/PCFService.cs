@@ -30,7 +30,7 @@ namespace Disbursements.Library.PCF.Services
             if (string.IsNullOrEmpty(data.Header.Ref1)) throw new ApplicationException("Cannot access service, Ref1 is required.");
             if (string.IsNullOrEmpty(data.Header.Ref2)) throw new ApplicationException("Cannot access service, Ref2 is required.");
             if (string.IsNullOrEmpty(data.Header.Ref3)) throw new ApplicationException("Cannot access service, Ref3 is required.");
-            if(data.Details.Sum(x => x.Amount) != 0) throw new ApplicationException("Total Debit and Credit must be equal.");
+            if (data.Details.Sum(x => x.Amount) != 0) throw new ApplicationException("Total Debit and Credit must be equal.");
 
             return _repository.PostJrnlEntry(data);
         }
@@ -44,11 +44,11 @@ namespace Disbursements.Library.PCF.Services
         {
             return _repository.PostPayment(data);
         }
- 
 
 
 
-        
+
+
 
 
 
