@@ -140,6 +140,7 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
+
         private int UpdateData(JrnlEntryView jrnlEntry)
         {
             var output = new JrnlEntryView();
@@ -290,10 +291,19 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
 
+                        if (PCFUpdateOP(opEntryPcfovpm, transId.ToString()))
+                        {
+                            sap.Commit();
+                            return transId;
+                        }
+                        else {
+                            var err = sap.Company.GetLastErrorDescription();
+                            sap.Rollback();
+                            throw new ApplicationException(err);
+                        }
 
-
-                        sap.Commit();
-                        return transId;
+                        //sap.Commit();
+                        //return transId;
                     }
                     else
                     {
@@ -321,7 +331,106 @@ namespace Disbursements.Library.PCF.Repositories
         
         }
 
+        public int TagPcfPayment(PCFOP data)
+        {
+            int result = 0;
 
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+
+                try
+                {
+                    result = cn.ExecuteScalar<int>(
+                         "spPCFPosting",
+                         new
+                         {
+                             mode = "POST_TAG_PCFPAYMENT",
+                             opNumber = data.Header.OPNum,
+                             bank = data.Header.Bank,
+                             //docEntry = jrnlEntry.Header.Docentry
+                         }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+
+                    using (IDbConnection cn1 = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "POST_OP",
+                            opDetail = data.Detail,
+                            opNumber = data.Header.OPNum,
+                            postBy = empCode,
+                        };
+
+                        cn1.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+
+                    }
+
+                    var opEntryPcfovpm = UpdateEmsServer(data);
+                    using (IDbConnection cn2 = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
+                        headerTable.Add(data.Header);
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "POST_OPpcf",
+                            opHeader = headerTable.ToDataTable(),
+                            opEntryPcfovpm = opEntryPcfovpm
+                        };
+
+                        cn2.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+
+                    PCFUpdateOP(opEntryPcfovpm, data.Header.OPNum.ToString());
+                    
+               
+              
+
+
+                }
+
+
+
+
+                catch (Exception e)
+                {
+
+                    throw e;
+                }
+
+                return result;
+
+
+            }
+
+        }
+
+
+        private bool PCFUpdateOP(int OPNum, string DocEntry)
+        {
+            bool IsExist = false;
+            using (var sap = new SAPBusinessOne())
+            {
+                sap.BeginTran();
+                var entry = sap.VendorPayments;
+                entry.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
+                IsExist = entry.GetByKey(OPNum);
+                if (IsExist)
+                {
+                    entry.Reference2 = DocEntry;
+                    entry.UserFields.Fields.Item("U_CardCode").Value = "PCF-" + DocEntry;
+                }
+                else
+                {
+                    throw new ApplicationException("OPentry not found.");
+                }
+                
+
+            }
+            return true;
+        }
 
         private int UpdateEmsServer(PCFOP data)
         {
