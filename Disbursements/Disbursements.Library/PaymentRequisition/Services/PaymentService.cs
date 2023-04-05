@@ -41,14 +41,14 @@ namespace Disbursements.Library.PaymentRequisition.Services
 
                 if (Model.Header.AcctType == "CA") {
                     if (Model.Header.CheckPrint == "") throw new ApplicationException("Please select check print mode.");
-                    if (Model.Header.CheckPrint == "MANUAL CHECK" && Model.Header.CheckRemarks == "") throw new ApplicationException("Please indicated reason for Manual Check.");
+                    if (Model.Header.CheckPrint.ToUpper() == "MANUAL CHECK" && Model.Header.CheckRemarks == "") throw new ApplicationException("Please indicated reason for Manual Check.");
                 }
 
                 repo.PostPayment(Model);
             }
             catch (Exception ex)
             {
-                throw new ApplicationException(ex.GetBaseException().ToString());
+                throw new ApplicationException(ex.Message.ToString());
             }
 
         }
