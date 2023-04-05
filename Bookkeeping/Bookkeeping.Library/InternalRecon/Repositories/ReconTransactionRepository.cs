@@ -14,27 +14,13 @@ using System.Xml.Linq;
 
 namespace Bookkeeping.Library.InternalRecon.Repositories
 {
-    internal class ReconTransactionRepository
+    public class ReconTransactionRepository
     {
         private readonly SERVER server;
 
         public ReconTransactionRepository()
         {
             server = new SERVER("Recon Transaction");
-        }
-
-        public IEnumerable<ReconTransactionViewModel> GetReconTransactions(int _transactionType)
-        {
-            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
-            {
-                var storedProc = "spInternalReconTransaction";
-                var parameter = new
-                {
-                    mode = "GET_BY_TYPE",
-                    type = _transactionType
-                };
-                return cn.Query<ReconTransactionViewModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-            }
         }
 
         public IEnumerable<ReconTransactionViewModel> GetReconTransactions(string _segment_0, string _segment_1)
@@ -44,7 +30,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var storedProc = "spInternalReconTransaction";
                 var parameter = new
                 {
-                    mode = "GET_BY_TYPE",
+                    mode = "GET",
                     segment_0 = _segment_0,
                     segment_1 = _segment_1
                 };
@@ -68,6 +54,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
 
         public IEnumerable<ReconTransactionModel> InsertTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
         {
+            foreach (var item in _data)
+            {
+                item.CanceledDate = DateTime.Now;
+                item.PostedDate = DateTime.Now;
+                item.ReconDate = DateTime.Now;
+            }
+
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
@@ -81,7 +74,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public void UpdateTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
+        public void UpdateTransactions(int _groupNumber)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -89,8 +82,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var parameter = new
                 {
                     mode = "UPDATE",
-                    data = _data.ToDataTable(),
-                    userId = _userId
+                    groupNumber = _groupNumber
                 };
                 cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
@@ -98,6 +90,13 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
 
         public void RemoveTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
         {
+            foreach (var item in _data)
+            {
+                item.CanceledDate = DateTime.Now;
+                item.PostedDate = DateTime.Now;
+                item.ReconDate = DateTime.Now;
+            }
+
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
@@ -125,5 +124,58 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
+
+        public IEnumerable<ReconTransactionViewModel> GetForReconTransactions()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "GET_FOR_RECON"
+                };
+                return cn.Query<ReconTransactionViewModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<int> GetTransactionRows(IEnumerable<ReconTransactionViewModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            var list = _transactions.Select(x => new AutoReconJEDetailsModel
+            {
+                TransId = x.TransId,
+                Line_ID = x.Line_ID
+            });
+
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spAutoInternalRecon";
+                var parameter = new
+                {
+                    mode = "GET_RECON_ROWS",
+                    jeDetails = list.ToDataTable(),
+                    segment_0 = segment_0,
+                    segment_1 = segment_1,
+                    reconDate = reconDate.ToShortDateString()
+                };
+
+                return cn.Query<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void Log(int _groupNumber, string _error)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "LOG",
+                    groupNumber = _groupNumber,
+                    error = _error
+                };
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
     }
 }

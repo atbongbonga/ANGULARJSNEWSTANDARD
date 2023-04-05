@@ -9,24 +9,15 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.Services
 {
-    internal class ReconTransactionService
+    public class ReconTransactionService
     {
         private readonly ReconTransactionRepository _repository;
-        public string _userId;
+        public string? _userId;
 
-        public ReconTransactionService(string userId)
+        public ReconTransactionService(string userId = "")
         {
-            if (string.IsNullOrEmpty(_userId)) throw new ApplicationException("Cannot access service, employee id is required.");
-
             _repository = new ReconTransactionRepository();
             _userId = userId.Trim();
-        }
-
-        public IEnumerable<ReconTransactionViewModel> GetTransactions(int transactionType)
-        {
-            if (transactionType.Equals(default)) throw new ArgumentException("Transaction type cannot be zero.");
-
-            return _repository.GetReconTransactions(transactionType);
         }
 
         public IEnumerable<ReconTransactionViewModel> GetTransactions(string segment_0, string segment_1)
@@ -37,17 +28,17 @@ namespace Bookkeeping.Library.InternalRecon.Services
             return _repository.GetReconTransactions(segment_0, segment_1);
         }
 
-        public void InsertTransations(IEnumerable<ReconTransactionModel> data)
+        public IEnumerable<ReconTransactionModel> InsertTransations(IEnumerable<ReconTransactionModel> data)
         {
             if (data is null) throw new ApplicationException("No data found");
-            if (data.Sum(x => x.ReconAmount) is not decimal.Zero) throw new ApplicationException("Unbalanced transactions.");
+            if (data.Sum(x => x.Balance) is not decimal.Zero) throw new ApplicationException("Unbalanced transactions.");
 
-            var postedTransaction = _repository.InsertTransactions(data, _userId);
+            var postedTransactions = _repository.InsertTransactions(data, _userId!);
 
-            if (postedTransaction is null) throw new ApplicationException("Problem in posting data.");
+            if (postedTransactions is null) throw new ApplicationException("Problem in posting data.");
             else
             {
-                var logs = postedTransaction.Select(x => new ReconLog
+                var logs = postedTransactions.Select(x => new ReconLog
                 {
                     DocEntry = x.DocEntry,
                     EmpCode = _userId,
@@ -55,44 +46,24 @@ namespace Bookkeeping.Library.InternalRecon.Services
                     ActionTaken = "INSERT"
                 });
 
-                _repository.InsertLogs(logs, _userId);
+                _repository.InsertLogs(logs, _userId!);
             }
+
+            return postedTransactions;
         }
 
-        public void UpdateTransactions(IEnumerable<ReconTransactionModel> data)
+        public void UpdateTransactions(int groupNumber)
         {
-            if (data is null) throw new ApplicationException("No data found");
-
-            var postedData = _repository.GetReconTransactions(data);
-
-            if (postedData is null) throw new ApplicationException("No existing data.");
-            else if (data.Any(x => !postedData.Any(y => y.DocEntry == x.DocEntry))) throw new ApplicationException("No existing data.");
-
-            _repository.UpdateTransactions(data, _userId);
-
-            var logs = postedData.Select(x => new ReconLog
-            {
-                DocEntry = x.DocEntry,
-                EmpCode = _userId,
-                DocDate = DateTime.Now,
-                ActionTaken = "UPDATE"
-            });
-
-            _repository.InsertLogs(logs, _userId);
+            _repository.UpdateTransactions(groupNumber);
         }
 
         public void RemoveTransactions(IEnumerable<ReconTransactionModel> data)
         {
             if (data is null) throw new ApplicationException("No data found");
 
-            var postedData = _repository.GetReconTransactions(data);
+            _repository.RemoveTransactions(data, _userId!);
 
-            if (postedData is null) throw new ApplicationException("No existing data.");
-            else if (data.Any(x => !postedData.Any(y => y.DocEntry == x.DocEntry))) throw new ApplicationException("No existing data.");
-
-            _repository.RemoveTransactions(data, _userId);
-
-            var logs = postedData.Select(x => new ReconLog
+            var logs = data.Select(x => new ReconLog
             {
                 DocEntry = x.DocEntry,
                 EmpCode = _userId,
@@ -100,7 +71,25 @@ namespace Bookkeeping.Library.InternalRecon.Services
                 ActionTaken = "REMOVE"
             });
 
-            _repository.InsertLogs(logs, _userId);
+            _repository.InsertLogs(logs, _userId!);
         }
+
+        public IEnumerable<ReconTransactionViewModel> GetForRecon()
+        {
+            return _repository.GetForReconTransactions();
+        }
+
+        public IEnumerable<int> GetTransactionRows(IEnumerable<ReconTransactionViewModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            return _repository.GetTransactionRows(_transactions, segment_0, segment_1, reconDate);
+        }
+
+        public void Log(int _groupNumber, string _error = "")
+        {
+            if (_groupNumber.Equals(default)) throw new ArgumentException("Group number cannot be zero.");
+
+            _repository.Log(_groupNumber, _error);
+        }
+
     }
 }

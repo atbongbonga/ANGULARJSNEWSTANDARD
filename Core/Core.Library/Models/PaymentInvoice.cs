@@ -8,6 +8,7 @@ namespace Core.Library.Models
 {
     public class PaymentInvoice
     {
+        public int LineId { get; set; }
         public int DocNum { get; set; }
         public int InvoiceId { get; set; }
         public int DocEntry { get; set; }

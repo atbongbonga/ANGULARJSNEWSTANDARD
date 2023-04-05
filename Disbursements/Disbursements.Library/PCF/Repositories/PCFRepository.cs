@@ -36,13 +36,11 @@ namespace Disbursements.Library.PCF.Repositories
             try
             {
 
-
                 var docEntry = UpdateData(data);
                 var jrnlEntry = GetTemplate(docEntry);
 
                 using (var sap = new SAPBusinessOne())
                 {
-                    sap.BeginTran();
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
                     entry.Memo = jrnlEntry.Header.Memo.Trim();
@@ -98,21 +96,6 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         }
-                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-                        {
-                            var storedProc = "spJrnlEntryLogs";
-                            var parameters = new
-                            {
-                                mode = "PCFJrnlEntry",
-                                empID = empCode,
-                                transId = transId,
-                                module = "Copsweb CreateJE",
-
-                            };
-
-                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                        }
                         sap.Commit();
                         return transId;
                     }
@@ -132,18 +115,19 @@ namespace Disbursements.Library.PCF.Repositories
                 {
                     Module = "PCF POST JE",
                     ErrorMsg = ex.GetBaseException().Message,
+                    DocEntry = data.Header.Docentry,
+                    Remarks = "",
                     PostedBy = empCode
-
                 });
 
-                throw;
+                throw new ApplicationException(ex.Message);
             }
         }
 
 
         private int UpdateData(JrnlEntryView jrnlEntry)
         {
-            var output = new JrnlEntryView();
+            //var output = new JrnlEntryView();
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 List<JournalEntryHeaderView> headerTable = new List<JournalEntryHeaderView>();

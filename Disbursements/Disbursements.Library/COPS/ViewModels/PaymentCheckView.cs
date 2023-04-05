@@ -8,6 +8,7 @@ namespace Disbursements.Library.COPS.ViewModels
 {
     public class PaymentCheckView
     {
+        public int LineId { get; set; }
         public DateTime DueDate { get; set; }
         public int CheckNum { get; set; }
         public string BankCode { get; set; }

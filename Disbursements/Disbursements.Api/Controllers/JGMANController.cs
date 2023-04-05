@@ -1,11 +1,13 @@
 ﻿using Disbursements.Library.COPS.Services;
 using Disbursements.Library.COPS.ViewModels.JGMAN;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Disbursements.Api.Controllers
 {
+    [Authorize]
     [Route("api/jgman")]
     [ApiController]
     public class JGMANController : ControllerBase

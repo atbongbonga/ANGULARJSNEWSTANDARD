@@ -17,7 +17,10 @@ namespace AccountingLegacy.Core.Library
         public Company Company => company;
         public void BeginTran() => company.StartTransaction();
         public void Commit() => company.EndTransaction(BoWfTransOpt.wf_Commit);
-        public void Rollback() => company.EndTransaction(BoWfTransOpt.wf_RollBack);
+        public void Rollback()
+        {
+            if (company.InTransaction) company.EndTransaction(BoWfTransOpt.wf_RollBack);
+        }
 
         public JournalEntries JournalEntries => company.GetBusinessObject(BoObjectTypes.oJournalEntries);
         public Payments VendorPayments => company.GetBusinessObject(BoObjectTypes.oVendorPayments);
@@ -27,6 +30,7 @@ namespace AccountingLegacy.Core.Library
             this.server = server;
             //this.srvr = new SERVER("SAP Business One");
             this.company = new Company();
+
             if (!this.company.Connected)
             {
                 this.company.DbServerType = BoDataServerTypes.dst_MSSQL2008;

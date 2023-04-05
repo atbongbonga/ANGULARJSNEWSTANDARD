@@ -27,61 +27,78 @@ namespace PF.Library.Repositories
 
         public void PostSetup(int docEntry)
         {
-            using (var sap = new SAPBusinessOne("172.30.1.167"))
+            using (var sap = new SAPBusinessOne())
             {
                 try
                 {
                     var data = GetSetupTemplate(docEntry);
-
-                    var jrnlEntry = sap.JournalEntries;
-                    jrnlEntry.ReferenceDate = data.First().RefDate;
-                    jrnlEntry.DueDate = data.First().RefDate;
-                    jrnlEntry.TaxDate = data.First().RefDate;
-                    jrnlEntry.Memo = data.First().LineMemo.Trim();
-                    jrnlEntry.Reference = data.First().Ref1.Trim();
-                    jrnlEntry.Reference2 = data.First().Ref2.Trim();
-                    jrnlEntry.Reference3 = data.First().Ref3.Trim();
-                    jrnlEntry.UserFields.Fields.Item("U_FTDocNo").Value = docEntry.ToString();
-
-                    foreach (var item in data)
+                    if (data is null || data.Count() == 0)
                     {
-                        jrnlEntry.Lines.AccountCode = item.Account;
-                        jrnlEntry.Lines.Debit = Convert.ToDouble(item.Debit);
-                        jrnlEntry.Lines.Credit = Convert.ToDouble(item.Credit);
-                        jrnlEntry.Lines.LineMemo = item.LineMemo;
-                        jrnlEntry.Lines.Reference1 = item.Ref1;
-                        jrnlEntry.Lines.Reference2 = item.Ref2;
-                        jrnlEntry.Lines.AdditionalReference = item.Ref3;
-                        jrnlEntry.Lines.UserFields.Fields.Item("U_EmpID").Value = item.Ref1;
-                        jrnlEntry.Lines.Add();
-                    }
-
-                    int returnValue = jrnlEntry.Add();
-                    if (returnValue == 0)
-                    {
-                        var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
-
                         using (IDbConnection cn = new SqlConnection(server.SAP_PF))
                         {
                             var storedProc = "spProfFees";
                             var parameters = new
                             {
-                                mode = "POST_CA",
+                                mode = "POST_OA",
                                 docEntry = docEntry,
-                                transId = transId,
+                                transId = 0,
                                 empCode = empCode,
                             };
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
-
                     }
                     else
                     {
-                        throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                        var jrnlEntry = sap.JournalEntries;
+                        jrnlEntry.ReferenceDate = data.First().RefDate;
+                        jrnlEntry.DueDate = data.First().RefDate;
+                        jrnlEntry.TaxDate = data.First().RefDate;
+                        jrnlEntry.Memo = data.First().LineMemo.Trim();
+                        jrnlEntry.Reference = data.First().Ref1.Trim();
+                        jrnlEntry.Reference2 = data.First().Ref2.Trim();
+                        jrnlEntry.Reference3 = data.First().Ref3.Trim();
+                        jrnlEntry.UserFields.Fields.Item("U_FTDocNo").Value = docEntry.ToString();
+
+                        foreach (var item in data)
+                        {
+                            jrnlEntry.Lines.AccountCode = item.Account;
+                            jrnlEntry.Lines.Debit = Convert.ToDouble(item.Debit);
+                            jrnlEntry.Lines.Credit = Convert.ToDouble(item.Credit);
+                            jrnlEntry.Lines.LineMemo = item.LineMemo;
+                            jrnlEntry.Lines.Reference1 = item.Ref1;
+                            jrnlEntry.Lines.Reference2 = item.Ref2;
+                            jrnlEntry.Lines.AdditionalReference = item.Ref3;
+                            //jrnlEntry.Lines.UserFields.Fields.Item("U_EmpID").Value = item.Ref1;
+                            jrnlEntry.Lines.Add();
+                        }
+
+                        int returnValue = jrnlEntry.Add();
+                        if (returnValue == 0)
+                        {
+                            var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
+
+                            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+                            {
+                                var storedProc = "spProfFees";
+                                var parameters = new
+                                {
+                                    mode = "POST_CA",
+                                    docEntry = docEntry,
+                                    transId = transId,
+                                    empCode = empCode,
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            }
+
+                        }
+                        else
+                        {
+                            //INSERT LOGS
+                            throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                        }
                     }
-
-
                 }
                 catch (Exception ex)
                 {
@@ -99,12 +116,13 @@ namespace PF.Library.Repositories
 
         public void PostAccrual(int docEntry)
         {
-            using (var sap = new SAPBusinessOne("172.30.1.167"))
+            using (var sap = new SAPBusinessOne())
             {
                 try
                 {
                     var data = GetAccrualTemplate(docEntry);
-
+                    if (data is null) return;
+                    if (data.Count() == 0) return;
                     var jrnlEntry = sap.JournalEntries;
                     jrnlEntry.ReferenceDate = data.First().RefDate;
                     jrnlEntry.DueDate = data.First().RefDate;
@@ -171,11 +189,13 @@ namespace PF.Library.Repositories
 
         public void PostReversal(int docEntry)
         {
-            using (var sap = new SAPBusinessOne("172.30.1.167"))
+            using (var sap = new SAPBusinessOne())
             {
                 try
                 {
                     var data = GetReversalTemplate(docEntry);
+                    if (data is null) return;
+                    if (data.Count() == 0) return;
 
                     var jrnlEntry = sap.JournalEntries;
                     jrnlEntry.ReferenceDate = data.First().RefDate;
@@ -241,22 +261,91 @@ namespace PF.Library.Repositories
             }
         }
 
-        public void PostPayment(DateTime bankDate, IEnumerable<int> docEntries)
+        public void PostPayment(DateTime bankDate, List<PayTransModel> docEntries)
         {
             var data = GetPaymentTemplate(bankDate, docEntries);
             foreach (var header in data.Headers)
             {
                 try
                 {
-                    //SETUP HEADER OF SAP
-
-                    foreach (var detail in data.Details.Where(x => x.DocNum == header.DocNum))
+                    using (var sap = new SAPBusinessOne())
                     {
+                        var pay = sap.VendorPayments;
+                        pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
+                        pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
+                        pay.DocDate = header.DocDate;
+                        pay.DueDate = header.DocDueDate;
+                        pay.TaxDate = header.DocDate;
+                        pay.CardName = header.CardName;
+                        pay.Remarks = header.Comments;
+                        pay.JournalRemarks = header.JrnlMemo;
+                        pay.DocCurrency = "PHP";
+                        pay.Reference1 = header.Ref1;
+                        pay.Reference2 = header.Ref2;
+                        pay.UserFields.Fields.Item("U_APDocNo").Value = header.U_APDocNo;
+                        pay.UserFields.Fields.Item("U_ChkNum").Value = header.U_ChkNum;
+                        pay.UserFields.Fields.Item("U_CardCode").Value = header.U_CardCode;
+                        pay.UserFields.Fields.Item("U_BranchCode").Value = header.U_BranchCode;
+
+
+                        if (header.PMode.IndexOf("ATM") >= 0)
+                        {
+                            pay.TransferAccount = header.AcctCode;
+                            pay.TransferSum = (double)header.BankAmt;
+                        }
+                        else if (header.PMode.Equals("CHEQUE"))
+                        {
+                            pay.Checks.BankCode = header.BankCode;
+                            pay.Checks.Branch = header.U_BranchCode;
+                            pay.Checks.AccounttNum = header.U_BranchCode;
+                            pay.Checks.CheckAccount = header.AcctCode;
+                            pay.Checks.CountryCode = "PH";
+                            pay.Checks.ManualCheck = SAPbobsCOM.BoYesNoEnum.tNO;
+                            pay.Checks.DueDate = header.DocDueDate;
+                            pay.Checks.CheckSum = (double)header.BankAmt;
+                        }
+                        else
+                        {
+                            throw new ApplicationException("Payment mode not found.");
+                        }
+
                         //SETUP DETAILS OF SAP
+                        foreach (var detail in data.Details.Where(x => x.DocNum == header.DocNum))
+                        {
+                            pay.AccountPayments.AccountCode = detail.AcctCode;
+                            pay.AccountPayments.SumPaid = Convert.ToDouble(detail.SumApplied);
+                            pay.AccountPayments.Decription = detail.Description;
+                            pay.AccountPayments.Add();
+                        }
+
+                        int returnValue = pay.Add();
+                        if (returnValue == 0)
+                        {
+                            var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
+
+                            using (IDbConnection cn = new SqlConnection(server.SAP_PF))
+                            {
+                                var storedProc = "spProfFees";
+                                var docs = data.DocEntries.Where(x => x.DocNum == header.DocNum).Select(x => new { Value = x.DocEntry });
+                                var parameters = new
+                                {
+                                    mode = "POST_PAYMENT",
+                                    empCode = empCode,
+                                    type = header.AcctType,
+                                    docNum = docNum,
+                                    docEntries = docs.ToDataTable(),
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            }
+                        }
+                        else
+                        {
+                            sap.Rollback();
+                            throw new ApplicationException(sap.Company.GetLastErrorDescription());
+                        }
+
                     }
-
-                    //LOG SUCCESS
-
                 }
                 catch (Exception ex)
                 {
@@ -311,7 +400,7 @@ namespace PF.Library.Repositories
             }
         }
 
-        private PaymentView GetPaymentTemplate(DateTime bankDate,  IEnumerable<int> docEntries)
+        private PaymentView GetPaymentTemplate(DateTime bankDate, List<PayTransModel> docEntries)
         {
             var output = new PaymentView();
             using (IDbConnection cn = new SqlConnection(server.SAP_PF))
@@ -328,8 +417,9 @@ namespace PF.Library.Repositories
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
                 )
                 {
-                    output.Headers = multi.Read<Payment>();
-                    output.Details = multi.Read<PaymentAccount>();
+                    output.Headers = multi.Read<PaymentHeaderView>();
+                    output.Details = multi.Read<PaymentAccountView>();
+                    output.DocEntries = multi.Read<DocumentEntryView>();
                     return output;
                 }
             }
@@ -355,3 +445,6 @@ namespace PF.Library.Repositories
 
     }
 }
+
+
+//verision 33.20.2023

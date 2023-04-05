@@ -20,7 +20,7 @@ namespace Bookkeeping.Library.Auth
             {
                 var storedProc = "UserLogin";
                 var parameters = new { UserName = username, Password = password };
-                return cn.QueryFirst<EmployeeViewModel>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                return cn.QueryFirstOrDefault<EmployeeViewModel>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
     }

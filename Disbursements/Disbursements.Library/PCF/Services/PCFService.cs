@@ -20,17 +20,14 @@ namespace Disbursements.Library.PCF.Services
             _repository = new PCFRepository(userCode);
         }
 
-
-
-
         public int PostJrnlEntry(JrnlEntryView data)
         {
 
-            if (string.IsNullOrEmpty(data.Header.Memo)) throw new ApplicationException("Cannot access service, Remarks is required.");
-            if (string.IsNullOrEmpty(data.Header.Ref1)) throw new ApplicationException("Cannot access service, Ref1 is required.");
-            if (string.IsNullOrEmpty(data.Header.Ref2)) throw new ApplicationException("Cannot access service, Ref2 is required.");
-            if (string.IsNullOrEmpty(data.Header.Ref3)) throw new ApplicationException("Cannot access service, Ref3 is required.");
-            if (data.Details.Sum(x => x.Amount) != 0) throw new ApplicationException("Total Debit and Credit must be equal.");
+            if (string.IsNullOrEmpty(data.Header.Memo)) throw new ApplicationException("Remarks is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref1)) throw new ApplicationException("Ref1 is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref2)) throw new ApplicationException("Ref2 is required.");
+            if (string.IsNullOrEmpty(data.Header.Ref3)) throw new ApplicationException("Ref3 is required.");
+            if(data.Details.Sum(x => x.Amount) != 0) throw new ApplicationException("Unbalanced transaction.");
 
             return _repository.PostJrnlEntry(data);
         }
