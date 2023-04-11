@@ -58,8 +58,8 @@ namespace Disbursements.Library.COPS.Repositories
                     else pay.DocType = BoRcptTypes.rAccount;
                     pay.CardName = data.Header.CardName ?? "";
                     pay.DocDate = data.Header.DocDate;
-                    pay.DueDate = data.Header.DueDate;
-                    pay.TaxDate = data.Header.TaxDate;
+                    pay.DueDate = data.Header.DueDate ?? data.Header.DocDate;
+                    pay.TaxDate = data.Header.DocDate; //should be taxdate
 
                     pay.Remarks = data.Header.Comments ?? "";
                     pay.JournalRemarks = data.Header.JrnlMemo ?? "";

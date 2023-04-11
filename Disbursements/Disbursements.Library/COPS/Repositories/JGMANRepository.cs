@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Dapper;
 using SAPbobsCOM;
 using System.Net;
+using Disbursements.Library.COPS.Models;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -47,6 +48,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.UserFields.Fields.Item("U_CardCode").Value = result.Header.U_CardCode;
                         pay.UserFields.Fields.Item("U_BranchCode").Value = result.Header.U_BranchCode;
                         pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = result.Header.U_HPDVoucherNo;
+                        pay.UserFields.Fields.Item("U_APDocNo").Value = item.GenId;
 
                         foreach (var account in result.Accounts)
                         {
@@ -165,5 +167,24 @@ namespace Disbursements.Library.COPS.Repositories
             }
         }
 
+        private void LogError(PaymentsErrorLogs log)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentsError",
+                    new
+                    {
+                        mode = "INSERT",
+                        module = log.Module,
+                        message = log.ErrorMsg,
+                        docEntry = log.DocEntry,
+                        remarks = log.Remarks,
+                        empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
     }
 }
+

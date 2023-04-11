@@ -28,7 +28,10 @@ namespace Disbursements.Library.COPS.Services
             if (string.IsNullOrEmpty(payment.Header.DocType)) throw new ApplicationException("Document type(Supplier/Account) is required.");
             if (string.IsNullOrEmpty(payment.Header.WhsCode)) throw new ApplicationException("Payment branch is required.");
             if (payment.Header.DocDate.Year < DateTime.Now.Year - 1) throw new ApplicationException("Invalid document date.");
-            if (payment.Header.DueDate.Year < DateTime.Now.Year - 1) throw new ApplicationException("Invalid due date.");
+            if (payment.Header.DueDate is not null)
+            {
+                if ((Convert.ToDateTime(payment.Header.DueDate).Year) < DateTime.Now.Year - 1) throw new ApplicationException("Invalid due date.");
+            }
             if (payment.Header.DocDueDate.Year < DateTime.Now.Year - 1) throw new ApplicationException("Invalid document due date.");
             if (string.IsNullOrEmpty(payment.Header.PMode)) throw new ApplicationException("Payment mode is required.");
             if (payment.Header.DocType.Equals("S") && string.IsNullOrEmpty(payment.Header.CardCode)) throw new ApplicationException("Supplier code is required.");
