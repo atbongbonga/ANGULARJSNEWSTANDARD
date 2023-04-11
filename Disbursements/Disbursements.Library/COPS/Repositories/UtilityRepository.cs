@@ -90,7 +90,7 @@ namespace Disbursements.Library.COPS.Repositories
 
                     if (data.Header.TransferAmt is not decimal.Zero)
                     {
-                        pay.TransferAccount = data.Header.BankCode;
+                        pay.TransferAccount = data.Header.TransferAcct;
                         pay.TransferSum = (double)data.Header.DocTotal;
                         pay.TransferDate = data.Header.DocDate;
                         pay.TransferReference = Convert.ToString(data.Header.OPUtilDocEntry);
@@ -100,7 +100,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.CreditCards.CreditCard = (int)data.Header.CreditCard;
                         pay.CreditCards.CreditAcct = data.Header.CreditAcct;
                         pay.CreditCards.PaymentMethodCode = 1;
-                        pay.CreditCards.CreditSum = (double)data.Header.CreditAmt;
+                        pay.CreditCards.CreditSum = (double)data.Header.DocTotal;
                         pay.CreditCards.VoucherNum = "1";
                         pay.CreditCards.Add();
                     }
