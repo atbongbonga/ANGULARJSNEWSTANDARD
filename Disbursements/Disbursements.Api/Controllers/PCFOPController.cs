@@ -39,7 +39,7 @@ namespace Disbursements.Api.Controllers
 
 
 
-        [HttpPost("posttagpcfpayment")]
+        [HttpPost("tagpcfpayment")]
         public IActionResult PostNoSap(PCFOP data)
         {
             try
