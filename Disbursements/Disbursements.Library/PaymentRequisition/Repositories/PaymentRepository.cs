@@ -24,7 +24,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             {
                 var sapEntry = InsertRequestPayment(Model);
                 var payment = GetTemplate(Model);
-                using (var sap = new SAPBusinessOne("172.30.0.17"))
+                using (var sap = new SAPBusinessOne("172.30.1.167"))
                 {
                     var pay = sap.VendorPayments;
 
@@ -169,7 +169,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         {
             PaymentView model = new PaymentView();
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(paramModel.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 try
                 {
@@ -200,7 +200,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public int InsertRequestPayment(PaymentView model)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
@@ -226,7 +226,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
@@ -263,7 +263,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         }
         private void LogError(PaymentsErrorLogs log)
         {
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON_TEST))
             {
                 cn.Execute(
                     "spPaymentsError",

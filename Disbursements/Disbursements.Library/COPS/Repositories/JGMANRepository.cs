@@ -32,7 +32,7 @@ namespace Disbursements.Library.COPS.Repositories
                 try
                 {
                     var result = GetPaymentView(item);
-                    using (var sap = new SAPBusinessOne("172.30.0.17"))
+                    using (var sap = new SAPBusinessOne())
                     {
                         var pay = sap.VendorPayments;
                         pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
@@ -56,6 +56,7 @@ namespace Disbursements.Library.COPS.Repositories
                             pay.AccountPayments.AccountCode = account.AcctCode;
                             pay.AccountPayments.Decription = account.Description;
                             pay.AccountPayments.SumPaid = (double)account.SumApplied;
+                            pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = account.LineId;
                             pay.AccountPayments.Add();
                         }
 
@@ -73,10 +74,11 @@ namespace Disbursements.Library.COPS.Repositories
                                     genId = item.GenId,
                                     branch = item.BrCode,
                                     acctType = item.AcctType,
+                                    userID = this.userCode
                                 }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
 
-                            //OLD UPDATES
+                            ////OLD UPDATES
                             using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
                             {
                                 cn.Execute("spOPPost", new
