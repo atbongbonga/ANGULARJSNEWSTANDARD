@@ -12,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Description = "Standard authorization header using the Bearer scheme (\"bearer {token}\")",
@@ -21,6 +22,7 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.CustomSchemaIds(x => x.ToString());
     options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.CustomSchemaIds(type => type.ToString());
 });
 
 builder.Services.AddCors(options =>
