@@ -32,9 +32,9 @@ namespace Disbursements.Library.PCF.Services
             return _repository.PostJrnlEntry(data);
         }
 
-        public int TagPcfPayment(PCFOP data)
+        public void TagPcfPayment(PCFOP data)
         {
-            return _repository.TagPcfPayment(data);
+            _repository.TagPcfPayment(data);
         }
 
         public int PostPayment(PCFOP data)
