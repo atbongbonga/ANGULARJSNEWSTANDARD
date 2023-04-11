@@ -107,7 +107,7 @@ namespace Disbursements.Library.COPS.Repositories
                     {
                         Module = "JGMAN-PAYMENT",
                         ErrorMsg = ex.GetBaseException().Message ,
-                        DocEntry = Convert.ToInt32(item.GenId) ,
+                        DocEntry = Convert.ToInt32(item.GenId),
                         Remarks = "JGMAN Payment Posting Failed."
                     });
                     throw new ApplicationException(ex.GetBaseException().Message);
