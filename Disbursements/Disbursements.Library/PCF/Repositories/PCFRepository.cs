@@ -98,6 +98,23 @@ namespace Disbursements.Library.PCF.Repositories
 
                         }
                         sap.Commit();
+
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spJrnlEntryLogs";
+                            var parameters = new
+                            {
+                                mode = "PCFPostJE",
+                                empID = empCode,
+                                transId = transId,
+                                module = "PCF JE POSTING"
+
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        }
+
                         return transId;
                     }
                     else
@@ -286,6 +303,25 @@ namespace Disbursements.Library.PCF.Repositories
                         if (PCFUpdateOP(opEntryPcfovpm, _opNumber.ToString()))
                         {
                             sap.Commit();
+
+                            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                            {
+                                var storedProc = "spSapOPLogs";
+                                var parameters = new
+                                {
+                                    mode = "PCFSAPOP",
+                                    empID = empCode,
+                                    opNumber = _opNumber,
+                                    module = "PCF OP POSTING"
+
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                            }
+
+
+
                             return _opNumber;
                         }
                         else
