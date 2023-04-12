@@ -10,10 +10,10 @@ namespace Core.Library.Models
     {
         public int DocNum { get; set; }
         public int LineId { get; set; }
-        public string AcctCode { get; set; }
+        public string? AcctCode { get; set; }
         public decimal SumApplied { get; set; }
-        public string Description { get; set; }
-        public string U_EmpID { get; set; }
-        public string U_DocLine { get; set; }
+        public string? Description { get; set; }
+        public string? U_EmpID { get; set; }
+        public string? U_DocLine { get; set; }
     }
 }
