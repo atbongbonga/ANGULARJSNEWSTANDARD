@@ -212,11 +212,12 @@ namespace Disbursements.Library.PCF.Repositories
 
             using (var sap = new SAPBusinessOne("172.30.1.167"))
             {
+                var opEntryPcfovpm = PostPayment_EMS(data);
                 try
                 {
                     var pay = sap.VendorPayments;
                     //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
-                    var opEntryPcfovpm = PostPayment_EMS(data);
+                
 
                     sap.BeginTran();
                     //POST OP
@@ -256,7 +257,7 @@ namespace Disbursements.Library.PCF.Repositories
                         foreach (var item in model.Checks)
                         {
                             pay.Checks.Branch = item.WhsCode;
-                            pay.Checks.AccounttNum = item.AccountttNum;
+                            pay.Checks.AccounttNum = item.AccounttNum;
                             pay.Checks.DueDate = item.DueDate;
                             pay.Checks.CountryCode = "PH";
                             pay.Checks.BankCode = item.BankCode;
@@ -330,6 +331,7 @@ namespace Disbursements.Library.PCF.Repositories
                 }
                 catch (Exception ex)
                 {
+                    DeletePcfOVPM(opEntryPcfovpm);
                     sap.Rollback();
 
                     LogError(new PCFErrorLogs

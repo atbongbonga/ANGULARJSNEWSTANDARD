@@ -34,7 +34,8 @@ namespace Disbursements.Library.PCF.Services
 
         public void TagPcfPayment(PCFOP data)
         {
-            _repository.TagPcfPayment(data);
+            var opEntryPcfovpm = _repository.PostPayment_EMS(data);
+            _repository.TagPcfPayment(data, opEntryPcfovpm);
         }
 
         public int PostPayment(PCFOP data)
