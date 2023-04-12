@@ -210,18 +210,12 @@ namespace Disbursements.Library.COPS.Repositories
                         };
                         cn.Execute(storedProc3, parameters3, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-
-                        if (data.Header.CardName == "PETRON CORPORATION")
-                        {
-                            var qry = "UPDATE PetronLogs SET OPNum = " + docNum + " WHERE DocEntry IN(SELECT MAX(DocEntry) FROM PetronLogs) AND ISNULL(OPNum,0)= 0";
-                            cn.Execute(qry, "", commandType: CommandType.Text, commandTimeout: 0);
-                        }
                     }
 
                     //10.51
                     if (data.Header.PCFDocNum != 0)
                     {
-                        using (IDbConnection cn = new SqlConnection("192.171.10.51"))
+                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
                         {
                             var storedProc = "spOPUtil";
                             var parameters = new
@@ -234,6 +228,8 @@ namespace Disbursements.Library.COPS.Repositories
                         }
                     }
                     //END OLD SP
+
+                    //return docNum;
 
                 }
                 catch (Exception ex)
