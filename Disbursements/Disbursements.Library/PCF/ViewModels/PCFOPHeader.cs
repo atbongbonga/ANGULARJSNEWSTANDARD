@@ -12,6 +12,7 @@ namespace Disbursements.Library.PCF.ViewModels
         public int DocEntry { get; set; }
         public int OPNum { get; set; }
         public string Payee { get; set; }
+        public string PType { get; set; }
         public string Addr { get; set; }
         public DateTime DocDate { get; set; }
         public string WhsCode { get; set; }

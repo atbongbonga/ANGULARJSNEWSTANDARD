@@ -35,5 +35,23 @@ namespace Disbursements.Api.Controllers
                 return BadRequest(ex.GetBaseException().Message);
             }
         }
+
+
+
+
+        [HttpPost("tagpcfpayment")]
+        public IActionResult PostNoSap(PCFOP data)
+        {
+            try
+            {
+                service.TagPcfPayment(data);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetBaseException().Message);
+            }
+        }
+
     }
 }
