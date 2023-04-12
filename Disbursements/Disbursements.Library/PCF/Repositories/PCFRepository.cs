@@ -84,7 +84,7 @@ namespace Disbursements.Library.PCF.Repositories
                         }
                         using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
                         {
-                            var storedProc = PcfBuilder.spPcfJE1051();
+                            var storedProc = PcfBuilder.spPcfLegacy1051();
                             var parameters = new
                             {
                                 mode = PcfBuilder.spModeJEUpdateTables(),
@@ -215,6 +215,8 @@ namespace Disbursements.Library.PCF.Repositories
                 try
                 {
                     var pay = sap.VendorPayments;
+                    //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
+                    var opEntryPcfovpm = PostPayment_EMS(data);
 
                     sap.BeginTran();
                     //POST OP
@@ -225,10 +227,8 @@ namespace Disbursements.Library.PCF.Repositories
                     pay.DocDate = model.Header.DocDate;
                     pay.DueDate = model.Header.DocDate;
                     pay.TaxDate = model.Header.DocDate;
-
                     pay.Remarks = model.Header.Remarks;
                     pay.JournalRemarks = model.Header.Payee;
-
                     pay.Address = model.Header.Address;
                     pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.DocCurrency = "PHP";
@@ -236,6 +236,8 @@ namespace Disbursements.Library.PCF.Repositories
                     pay.UserFields.Fields.Item("U_ChkNum").Value = string.IsNullOrEmpty(data.Header.ChkNum) ? "" : data.Header.ChkNum.Trim();
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.BranchCode.Trim();
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = model.Header.U_HPDVoucherNo!.Trim();
+                    pay.Reference2 = opEntryPcfovpm.ToString();
+                    pay.UserFields.Fields.Item("U_CardCode").Value = "PCF-" + opEntryPcfovpm.ToString();
 
                     if (model.Accounts is not null && model.Accounts.Count() > 0)
                     {
@@ -271,9 +273,7 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         var _opNumber = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
-                        //OLD UPDATES
-                        //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
-                        var opEntryPcfovpm = PostPayment_EMS(data);
+                   
                         List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
                         headerTable.Add(data.Header);
 
@@ -299,9 +299,7 @@ namespace Disbursements.Library.PCF.Repositories
                             }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
 
-                        //ADD REFERENCE IN SAP ENTRY BASED ON EMS SERVER's GENERATED DOCENTRY
-                        if (PCFUpdateOP(opEntryPcfovpm, _opNumber.ToString()))
-                        {
+                    
                             sap.Commit();
 
                             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
@@ -319,23 +317,13 @@ namespace Disbursements.Library.PCF.Repositories
                                 cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                             }
-
-
-
                             return _opNumber;
-                        }
-                        else
-                        {
-                            sap.Rollback();
-                            throw new ApplicationException("OP Entry not found.");
-                        }
 
-                        //sap.Commit();
-                        //return transId;
                     }
                     else
                     {
                         var err = sap.Company.GetLastErrorDescription();
+                        DeletePcfOVPM(opEntryPcfovpm);
                         sap.Rollback();
                         throw new ApplicationException(err);
                     }
@@ -359,12 +347,12 @@ namespace Disbursements.Library.PCF.Repositories
             //return 0;
         }
 
-        public void TagPcfPayment(PCFOP data)
+        public void TagPcfPayment(PCFOP data, int opEntryPcfovpm)
         {
             try
             {
                 //OLD UPDATE
-                var opEntryPcfovpm = PostPayment_EMS(data);
+           
 
                 using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                 {
@@ -454,14 +442,14 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
-        private int PostPayment_EMS(PCFOP data)
+        public int PostPayment_EMS(PCFOP data)
         {
             using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
             {
                 List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
                 headerTable.Add(data.Header);
                 return cn.ExecuteScalar<int>(
-                      PcfBuilder.spPcfJE1051(),
+                      PcfBuilder.spPcfLegacy1051(),
                       new
                       {
                           mode = "POST_OP",
@@ -511,5 +499,41 @@ namespace Disbursements.Library.PCF.Repositories
 
       
         }
+
+
+        private void DeletePcfOVPM(int OpEntry)
+        {
+            try
+            {
+  
+
+                using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                {
+                    var storedProc = PcfBuilder.spPcfLegacy1051();
+                    var parameters = new
+                    {
+                        mode = "DeletePcfovpm",
+                        opEntryPcfovpm = OpEntry
+                  
+                    };
+                    cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                  
+                }
+
+         
+            }
+            catch (Exception ex)
+            {
+                LogError(new PCFErrorLogs
+                {
+                    Module = "PCF TAG PCF OP",
+                    ErrorMsg = ex.GetBaseException().Message,
+                    PostedBy = empCode
+                });
+
+            }
+        }
+
     }
 }
