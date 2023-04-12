@@ -9,6 +9,8 @@ namespace Disbursements.Library.PCF.ViewModels
     public class PCFOPDetail
     {
         public int DocNum { get; set; }
+        public int OPNum { get; set; }
+        
         public int Docentry { get; set; }
         public int BREntry { get; set; }
 
@@ -42,6 +44,8 @@ namespace Disbursements.Library.PCF.ViewModels
         public string Custodian { get; set; }
         public int VSales { get; set; }
         public int VSApp { get; set; }
+        public string? PCFType { get; set; }
+        public int OLDLn { get; set; }
         public int MnlVAT { get; set; }
         public double VAT { get; set; }
         public double NetVAT { get; set; }

@@ -210,7 +210,7 @@ namespace Disbursements.Library.PCF.Repositories
         {
             var model = GetPaymentTemplate(data);
 
-            using (var sap = new SAPBusinessOne())
+            using (var sap = new SAPBusinessOne("172.30.1.167"))
             {
                 try
                 {
@@ -480,25 +480,36 @@ namespace Disbursements.Library.PCF.Repositories
             headerTable.Add(data.Header);
 
             var output = new PCFOPView();
-            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+
+            try
             {
-                using (var multi = cn.QueryMultiple
-                (
-                    "spPCFPosting",
-                    new
-                    {
-                        mode = "GET_POSTOP_TEMPLATE",
-                        opHeader = headerTable.ToDataTable(),
-                        opDetail = data.Detail.ToDataTable(),
-                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
-                )
+                using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                 {
-                    output.Header = multi.Read<PCFOPHeaderView>().Single();
-                    output.Accounts = multi.Read<PCFOPAccountsView>().ToList();
-                    output.Checks = multi.Read<PCFOPChecksView>().ToList();
-                    return output;
+                    using (var multi = cn.QueryMultiple
+                    (
+                        "spPCFPosting",
+                        new
+                        {
+                            mode = "GET_POSTOP_TEMPLATE",
+                            opHeader = headerTable.ToDataTable(),
+                            opDetail = data.Detail.ToDataTable(),
+                        }, commandType: CommandType.StoredProcedure, commandTimeout: 0)
+                    )
+                    {
+                        output.Header = multi.Read<PCFOPHeaderView>().Single();
+                        output.Accounts = multi.Read<PCFOPAccountsView>().ToList();
+                        output.Checks = multi.Read<PCFOPChecksView>().ToList();
+                        return output;
+                    }
                 }
             }
+            catch (Exception e )
+            {
+
+                throw e.GetBaseException();
+            }
+
+      
         }
     }
 }
