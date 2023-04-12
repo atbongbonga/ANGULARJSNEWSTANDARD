@@ -67,6 +67,25 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
+                        //NEW LOG
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spJrnlEntryLogs";
+                            var parameters = new
+                            {
+                                mode = "PCFPostJE",
+                                empID = empCode,
+                                transId = transId,
+                                module = "PCF JE POSTING"
+
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
+
+                        sap.Commit();
+
+                        //OLD UPDATE
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
                             var storedProc = "spPCFPosting";
@@ -91,23 +110,6 @@ namespace Disbursements.Library.PCF.Repositories
                                 transId = transId,
                                 pcfOP = jrnlEntry.Header.PCFOP,
                                 pcfDoc = jrnlEntry.Header.Ref2.Trim(),
-
-                            };
-
-                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                        }
-                        sap.Commit();
-
-                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-                        {
-                            var storedProc = "spJrnlEntryLogs";
-                            var parameters = new
-                            {
-                                mode = "PCFPostJE",
-                                empID = empCode,
-                                transId = transId,
-                                module = "PCF JE POSTING"
 
                             };
 
