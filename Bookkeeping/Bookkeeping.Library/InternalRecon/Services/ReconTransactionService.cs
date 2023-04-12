@@ -46,7 +46,7 @@ namespace Bookkeeping.Library.InternalRecon.Services
                     ActionTaken = "INSERT"
                 });
 
-                _repository.InsertLogs(logs, _userId!);
+                _repository.Log(logs, _userId!);
             }
 
             return postedTransactions;
@@ -71,7 +71,7 @@ namespace Bookkeeping.Library.InternalRecon.Services
                 ActionTaken = "REMOVE"
             });
 
-            _repository.InsertLogs(logs, _userId!);
+            _repository.Log(logs, _userId!);
         }
 
         public IEnumerable<ReconTransactionViewModel> GetForRecon()
