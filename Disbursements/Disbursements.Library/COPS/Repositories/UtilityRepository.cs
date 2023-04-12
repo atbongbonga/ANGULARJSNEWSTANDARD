@@ -96,16 +96,30 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.TransferReference = Convert.ToString(data.Header.OPUtilDocEntry);
                         pay.PrimaryFormItems.PaymentMeans = SAPbobsCOM.PaymentMeansTypeEnum.pmtBankTransfer;
                     }
-                    else if (data.Header.CreditAmt is not decimal.Zero) {
-                        pay.CreditCards.CreditCard = (int)data.Header.CreditCard;
-                        pay.CreditCards.CreditAcct = data.Header.CreditAcct;
-                        pay.CreditCards.PaymentMethodCode = 1;
-                        pay.CreditCards.CreditSum = (double)data.Header.DocTotal;
-                        pay.CreditCards.VoucherNum = "1";
-                        pay.CreditCards.Add();
+                    else if (data.CreditCards is not null && data.CreditCards.Count() > 0)
+                    {
+                        foreach (var item in data.CreditCards)
+                        {
+                            pay.CreditCards.CreditCard = item.CreditCard;
+                            pay.CreditCards.CreditAcct = item.CreditAcct;
+                            pay.CreditCards.PaymentMethodCode = 1;
+                            pay.CreditCards.CreditSum = (double)item.CreditAmt;
+                            pay.CreditCards.VoucherNum = "1";
+                            pay.CreditCards.Add();
+                        }
                     }
+                    //else if (data.Header.CreditAmt is not decimal.Zero)
+                    //{
 
-                    if (data.Checks is not null && data.Checks.Count() > 0){
+                    //    pay.CreditCards.CreditCard = (int)data.Header.CreditCard;
+                    //    pay.CreditCards.CreditAcct = data.Header.CreditAcct;
+                    //    pay.CreditCards.PaymentMethodCode = 1;
+                    //    pay.CreditCards.CreditSum = (double)data.Header.DocTotal;
+                    //    pay.CreditCards.VoucherNum = "1";
+                    //    pay.CreditCards.Add();
+                    //}
+
+                        if (data.Checks is not null && data.Checks.Count() > 0){
                         foreach (var item in data.Checks)
                         {
                             pay.Checks.Branch = item.Branch;
