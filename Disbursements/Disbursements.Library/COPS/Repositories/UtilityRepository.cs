@@ -215,7 +215,7 @@ namespace Disbursements.Library.COPS.Repositories
                     //10.51
                     if (data.Header.PCFDocNum != 0)
                     {
-                        using (IDbConnection cn = new SqlConnection("192.171.10.51"))
+                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
                         {
                             var storedProc = "spOPUtil";
                             var parameters = new
