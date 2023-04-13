@@ -41,6 +41,7 @@ namespace Disbursements.Library.PCF.Repositories
             {
                 try
                 {
+                    sap.BeginTran();
 
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
@@ -188,8 +189,6 @@ namespace Disbursements.Library.PCF.Repositories
                     return output;
                 }
             }
-
-
         }
 
         private void LogError(PCFErrorLogs log)
@@ -314,7 +313,6 @@ namespace Disbursements.Library.PCF.Repositories
                                 empID = empCode,
                                 opNumber = _opNumber,
                                 module = "PCF OP POSTING"
-
                             };
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
