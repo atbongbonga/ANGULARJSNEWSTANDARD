@@ -28,7 +28,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                 {
                     var pay = sap.VendorPayments;
 
-                    sap.BeginTran();
+                    
                     if (payment.Header.DocType.Equals("A"))
                     { pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount; }
                     else {
@@ -86,7 +86,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     //Checks
-                    if (payment.Checks.Count() > 0)
+                    if (payment.Checks is not null && payment.Checks.Count() > 0)
                     {
 
                         foreach (var item in payment.Checks)
@@ -105,7 +105,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     //Credit Card
-                    if (payment.CreditCards.Count() > 0)
+                    if (payment.CreditCards is not null && payment.CreditCards.Count() > 0)
                     {
                         foreach (var item in payment.CreditCards)
                         {
@@ -122,7 +122,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     //Invoice
-                    if (payment.Invoices.Count() > 0)
+                    if (payment.Invoices is not null && payment.Invoices.Count() > 0)
                     {
                         foreach (var item in payment.Invoices)
                         {
@@ -144,8 +144,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     if (pay.Add() == 0)
                     {
                         var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
-                        sap.Commit();
-                        PostPaymentRequest(sapEntry ,docNum, Model );
+                        PostPaymentRequest(sapEntry ,docNum, Model);
                     }
                     else
                     {
@@ -203,7 +202,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-                if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
                 {
                     var storedProc = "spPaymentRequisition";
@@ -215,7 +213,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 
                     };
                     var prDocentry = cn.ExecuteScalar<Int32>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                    cn.Dispose();
                     return prDocentry;
                 }
                 catch (Exception ex)
@@ -229,7 +226,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-                if (cn.State == ConnectionState.Closed) { cn.Open(); }
                 try
                 {
                     var storedProc = "spPaymentRequisition";
@@ -254,7 +250,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         EmpID = this.userCode
                     };
                     cn.Execute(storedProc, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                    cn.Dispose();
                 }
                 catch (Exception ex)
                 {
