@@ -48,7 +48,7 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.UserFields.Fields.Item("U_CardCode").Value = result.Header.U_CardCode;
                         pay.UserFields.Fields.Item("U_BranchCode").Value = result.Header.U_BranchCode;
                         pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = result.Header.U_HPDVoucherNo;
-                        pay.UserFields.Fields.Item("U_APDocNo").Value = item.GenId;
+                        pay.UserFields.Fields.Item("U_APDocNo").Value = result.Header.U_APDocNo;
 
                         foreach (var account in result.Accounts)
                         {
