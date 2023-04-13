@@ -34,14 +34,16 @@ namespace Disbursements.Library.PCF.Repositories
 
         public int PostJrnlEntry(JrnlEntryView data)
         {
-            try
+
+            var docEntry = UpdateData(data);
+            var jrnlEntry = GetTemplate(docEntry);
+
+            using (var sap = new SAPBusinessOne())
             {
-
-                var docEntry = UpdateData(data);
-                var jrnlEntry = GetTemplate(docEntry);
-
-                using (var sap = new SAPBusinessOne())
+                try
                 {
+                    sap.BeginTran();
+
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
                     entry.Memo = jrnlEntry.Header.Memo.Trim();
@@ -66,6 +68,24 @@ namespace Disbursements.Library.PCF.Repositories
                     if (returnValue == 0)
                     {
                         var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
+
+                        //NEW UPDATE
+
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spJrnlEntryLogs";
+                            var parameters = new
+                            {
+                                mode = "PCFPostJE",
+                                empID = empCode,
+                                transId = transId,
+                                module = "PCF JE POSTING"
+
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        }
 
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
@@ -97,23 +117,8 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         }
+
                         sap.Commit();
-
-                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-                        {
-                            var storedProc = "spJrnlEntryLogs";
-                            var parameters = new
-                            {
-                                mode = "PCFPostJE",
-                                empID = empCode,
-                                transId = transId,
-                                module = "PCF JE POSTING"
-
-                            };
-
-                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                        }
 
                         return transId;
                     }
@@ -125,20 +130,46 @@ namespace Disbursements.Library.PCF.Repositories
                     }
 
                 }
-            }
-            catch (Exception ex)
-            {
-
-                LogError(new PCFErrorLogs
+                catch (Exception ex)
                 {
-                    Module = "PCF POST JE",
-                    ErrorMsg = ex.GetBaseException().Message,
-                    DocEntry = data.Header.Docentry,
-                    Remarks = "",
-                    PostedBy = empCode
-                });
+                    sap.Rollback();
 
-                throw new ApplicationException(ex.Message);
+                    LogError(new PCFErrorLogs
+                    {
+                        Module = "PCF POST JE",
+                        ErrorMsg = ex.GetBaseException().Message,
+                        DocEntry = data.Header.Docentry,
+                        Remarks = "",
+                        PostedBy = empCode
+                    });
+
+                    using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                    {
+                        var storedProc = PcfBuilder.spPcfLegacy1051();
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = data.Header.Docentry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                    }
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = docEntry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+
+
+                    throw new ApplicationException(ex.Message);
+                }
             }
         }
 
@@ -217,7 +248,7 @@ namespace Disbursements.Library.PCF.Repositories
                 {
                     var pay = sap.VendorPayments;
                     //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
-                
+
 
                     sap.BeginTran();
                     //POST OP
@@ -274,7 +305,7 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         var _opNumber = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
-                   
+
                         List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
                         headerTable.Add(data.Header);
 
@@ -300,25 +331,25 @@ namespace Disbursements.Library.PCF.Repositories
                             }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
 
-                    
-                            sap.Commit();
 
-                            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        sap.Commit();
+
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spSapOPLogs";
+                            var parameters = new
                             {
-                                var storedProc = "spSapOPLogs";
-                                var parameters = new
-                                {
-                                    mode = "PCFSAPOP",
-                                    empID = empCode,
-                                    opNumber = _opNumber,
-                                    module = "PCF OP POSTING"
+                                mode = "PCFSAPOP",
+                                empID = empCode,
+                                opNumber = _opNumber,
+                                module = "PCF OP POSTING"
 
-                                };
+                            };
 
-                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-                            }
-                            return _opNumber;
+                        }
+                        return _opNumber;
 
                     }
                     else
@@ -354,7 +385,7 @@ namespace Disbursements.Library.PCF.Repositories
             try
             {
                 //OLD UPDATE
-           
+
 
                 using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                 {
@@ -493,13 +524,13 @@ namespace Disbursements.Library.PCF.Repositories
                     }
                 }
             }
-            catch (Exception e )
+            catch (Exception e)
             {
 
                 throw e.GetBaseException();
             }
 
-      
+
         }
 
 
@@ -507,7 +538,7 @@ namespace Disbursements.Library.PCF.Repositories
         {
             try
             {
-  
+
 
                 using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
                 {
@@ -516,14 +547,14 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         mode = "DeletePcfovpm",
                         opEntryPcfovpm = OpEntry
-                  
+
                     };
                     cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-                  
+
                 }
 
-         
+
             }
             catch (Exception ex)
             {
