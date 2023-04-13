@@ -41,8 +41,6 @@ namespace Disbursements.Library.PCF.Repositories
             {
                 try
                 {
-                    sap.BeginTran();
-
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
                     entry.Memo = jrnlEntry.Header.Memo.Trim();
@@ -100,6 +98,7 @@ namespace Disbursements.Library.PCF.Repositories
 
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
+
                         using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
                         {
                             var storedProc = PcfBuilder.spPcfLegacy1051();
@@ -116,20 +115,40 @@ namespace Disbursements.Library.PCF.Repositories
 
                         }
 
-                        sap.Commit();
-
                         return transId;
                     }
                     else
                     {
                         var err = sap.Company.GetLastErrorDescription();
-                        sap.Rollback();
                         throw new ApplicationException(err);
                     }
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
+                    using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                    {
+                        var storedProc = PcfBuilder.spPcfLegacy1051();
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = data.Header.Docentry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                    }
+
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = docEntry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
 
                     LogError(new PCFErrorLogs
                     {
