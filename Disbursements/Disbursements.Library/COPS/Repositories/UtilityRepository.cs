@@ -245,6 +245,7 @@ namespace Disbursements.Library.COPS.Repositories
                     LogError(new PaymentsErrorLogs
                     {
                         Module = "UTILITY PAYMENT",
+                        DocEntry = (int)data.Header.OPUtilDocEntry,
                         ErrorMsg = ex.GetBaseException().Message
                     });
                     throw new ApplicationException(ex.GetBaseException().Message);
