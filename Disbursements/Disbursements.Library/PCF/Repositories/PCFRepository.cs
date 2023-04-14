@@ -87,6 +87,7 @@ namespace Disbursements.Library.PCF.Repositories
 
                         }
 
+                        //OLD UPDATE
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
                             var storedProc = "spPCFPosting";
@@ -117,8 +118,6 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         }
-
-                        sap.Commit();
 
                         return transId;
                     }
