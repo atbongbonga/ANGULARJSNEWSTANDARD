@@ -27,8 +27,7 @@ namespace Disbursements.Api.Controllers
         {
             try
             {
-                service.PostPayment(data);
-                return Ok();
+                return Ok(service.PostPayment(data));
             }
             catch (Exception ex)
             {
@@ -44,8 +43,7 @@ namespace Disbursements.Api.Controllers
         {
             try
             {
-                service.TagPcfPayment(data);
-                return Ok();
+                return Ok(service.TagPcfPayment(data));
             }
             catch (Exception ex)
             {

@@ -125,6 +125,7 @@ namespace Disbursements.Library.PCF.Repositories
                         var err = sap.Company.GetLastErrorDescription();
                         throw new ApplicationException(err);
                     }
+                }
                 catch (Exception ex)
                 {
                     using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
@@ -374,7 +375,7 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
                         }
-                        return _opNumber;
+                        return opEntryPcfovpm;
                     }
                     else
                     {
@@ -396,7 +397,7 @@ namespace Disbursements.Library.PCF.Repositories
             }
         }
 
-        public void TagPcfPayment(PCFOP data, int opEntryPcfovpm)
+        public int TagPcfPayment(PCFOP data, int opEntryPcfovpm)
         {
             try
             {
@@ -436,6 +437,8 @@ namespace Disbursements.Library.PCF.Repositories
                 }
 
                 PCFUpdateOP(opEntryPcfovpm, data.Header.OPNum.ToString());
+
+                return opEntryPcfovpm;
             }
             catch (Exception ex)
             {
@@ -446,6 +449,7 @@ namespace Disbursements.Library.PCF.Repositories
                     PostedBy = empCode
                 });
 
+                throw new ApplicationException(ex.GetBaseException().Message);
             }
         }
 
