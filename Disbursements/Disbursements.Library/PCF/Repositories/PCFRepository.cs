@@ -225,7 +225,7 @@ namespace Disbursements.Library.PCF.Repositories
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 cn.Execute(
-                    "spPCFJEError",
+                    "spPCFErrorLogs",
                     new
                     {
                         mode = "INSERT",
@@ -240,26 +240,24 @@ namespace Disbursements.Library.PCF.Repositories
         {
             var model = GetPaymentTemplate(data);
 
-            using (var sap = new SAPBusinessOne("172.30.1.167"))
+            using (var sap = new SAPBusinessOne())
             {
+                //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
                 var opEntryPcfovpm = PostPayment_EMS(data);
                 try
                 {
                     var pay = sap.VendorPayments;
-                    //GET DOCENTRY FROM LOOKUP TABLE IN EMS SERVER (pcfovpm)
 
-
-                    sap.BeginTran();
                     //POST OP
                     pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
 
                     pay.CardCode = string.Empty;
-                    pay.CardName = model.Header.Payee;
+                    pay.CardName = model.Header.CardName;
                     pay.DocDate = model.Header.DocDate;
                     pay.DueDate = model.Header.DocDate;
                     pay.TaxDate = model.Header.DocDate;
                     pay.Remarks = model.Header.Remarks;
-                    pay.JournalRemarks = model.Header.Payee;
+                    pay.JournalRemarks = model.Header.JrnlMemo;
                     pay.Address = model.Header.Address;
                     pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount;
                     pay.DocCurrency = "PHP";
@@ -269,6 +267,7 @@ namespace Disbursements.Library.PCF.Repositories
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = model.Header.U_HPDVoucherNo!.Trim();
                     pay.Reference2 = opEntryPcfovpm.ToString();
                     pay.UserFields.Fields.Item("U_CardCode").Value = "PCF-" + opEntryPcfovpm.ToString();
+                    pay.UserFields.Fields.Item("U_APDocNo").Value = opEntryPcfovpm.ToString();
 
                     if (model.Accounts is not null && model.Accounts.Count() > 0)
                     {
@@ -304,18 +303,17 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         var _opNumber = Convert.ToInt32(sap.Company.GetNewObjectKey());
 
-
                         List<PCFOPHeader> headerTable = new List<PCFOPHeader>();
                         headerTable.Add(data.Header);
 
-                        //POPULATE LOOKUP TABLES IN SAP SERVER (OVPM AND PCF)
+                        //OLD SP
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
                             var storedProc = "spPCFPosting";
                             var parameters = new
                             {
                                 mode = "POST_OP",
-                                opDetail = data.Detail,
+                                opDetail = data.Detail.ToDataTable(),
                                 opNumber = _opNumber,
                                 postBy = empCode,
                             };
@@ -330,9 +328,21 @@ namespace Disbursements.Library.PCF.Repositories
                             }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
 
+                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                        {
+                            cn.ExecuteScalar(
+                                  PcfBuilder.spPcfLegacy1051(),
+                                  new
+                                  {
+                                      mode = "POST_OP",
+                                      opHeader = headerTable.ToDataTable(),
+                                      opDetail = data.Detail.ToDataTable(),
+                                      opNumber = _opNumber.ToString(),
+                                      opEntryPcfovpm = opEntryPcfovpm
+                                  }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
 
-                        sap.Commit();
-
+                        //NEW UPDATE
                         using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
                             var storedProc = "spSapOPLogs";
@@ -349,21 +359,15 @@ namespace Disbursements.Library.PCF.Repositories
 
                         }
                         return _opNumber;
-
                     }
                     else
                     {
                         var err = sap.Company.GetLastErrorDescription();
-                        DeletePcfOVPM(opEntryPcfovpm);
-                        sap.Rollback();
                         throw new ApplicationException(err);
                     }
                 }
                 catch (Exception ex)
                 {
-                    DeletePcfOVPM(opEntryPcfovpm);
-                    sap.Rollback();
-
                     LogError(new PCFErrorLogs
                     {
                         Module = "PCF POST OP",
@@ -374,9 +378,6 @@ namespace Disbursements.Library.PCF.Repositories
                     throw new ApplicationException(ex.GetBaseException().Message);
                 }
             }
-
-
-            //return 0;
         }
 
         public void TagPcfPayment(PCFOP data, int opEntryPcfovpm)
@@ -384,8 +385,6 @@ namespace Disbursements.Library.PCF.Repositories
             try
             {
                 //OLD UPDATE
-
-
                 using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                 {
                     var storedProc = "spPCFPosting";
@@ -484,10 +483,9 @@ namespace Disbursements.Library.PCF.Repositories
                       PcfBuilder.spPcfLegacy1051(),
                       new
                       {
-                          mode = "POST_OP",
+                          mode = "INSERT_OP",
                           opHeader = headerTable.ToDataTable(),
                           opDetail = data.Detail.ToDataTable(),
-
                       }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
@@ -525,11 +523,8 @@ namespace Disbursements.Library.PCF.Repositories
             }
             catch (Exception e)
             {
-
                 throw e.GetBaseException();
             }
-
-
         }
 
 
