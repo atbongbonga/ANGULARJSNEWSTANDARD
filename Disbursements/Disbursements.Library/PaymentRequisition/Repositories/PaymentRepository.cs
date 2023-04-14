@@ -28,14 +28,14 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                 {
                     var pay = sap.VendorPayments;
 
-                    
                     if (payment.Header.DocType.Equals("A"))
                     { pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount; }
-                    else {
+                    else
+                    {
                         pay.CardCode = payment.Header.CardCode;
                         pay.DocType = SAPbobsCOM.BoRcptTypes.rSupplier;
                     }
-                    
+
                     //Header
                     pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
                     pay.Address = payment.Header.Address;
@@ -51,11 +51,11 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     pay.UserFields.Fields.Item("U_CardCode").Value = payment.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = payment.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.Header.U_HPDVoucherNo;
-                    pay.UserFields.Fields.Item("U_APDocNo").Value = payment.Header.U_APDocNo;
+                    pay.UserFields.Fields.Item("U_APDocNo").Value = sapEntry.ToString();
                     pay.Reference2 = "R" + sapEntry.ToString();
 
                     //Accounts
-                    if (payment.Accounts.Count() > 0)
+                    if (payment.Accounts is not null && payment.Accounts.Count() > 0)
                     {
                         foreach (var item in payment.Accounts)
                         {
@@ -64,7 +64,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                             pay.AccountPayments.Decription = item.Description;
                             pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_DocLine;
                             pay.AccountPayments.Add();
-
                         }
                     }
 
@@ -144,7 +143,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     if (pay.Add() == 0)
                     {
                         var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
-                        PostPaymentRequest(sapEntry ,docNum, Model);
+                        PostPaymentRequest(sapEntry, docNum, Model);
                     }
                     else
                     {
@@ -221,7 +220,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                 }
             }
         }
-        public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
+        public void PostPaymentRequest(int sapEntry, int docNum, PaymentView payment)
         {
             List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
