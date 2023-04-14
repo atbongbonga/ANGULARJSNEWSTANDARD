@@ -1,4 +1,5 @@
-﻿using Disbursements.Library.PCF.Helpers;
+﻿using Core.Library.Models;
+using Disbursements.Library.PCF.Helpers;
 using Disbursements.Library.PCF.Repositories;
 using Disbursements.Library.PCF.ViewModels;
 using SAPbobsCOM;
@@ -40,6 +41,10 @@ namespace Disbursements.Library.PCF.Services
 
         public int PostPayment(PCFOP data)
         {
+            if (string.IsNullOrEmpty(data.Header.Bank)) throw new ApplicationException("BankCode is required.");
+            if (string.IsNullOrEmpty(data.Header.Remarks)) throw new ApplicationException("Remarks is required.");
+            if (string.IsNullOrEmpty(data.Header.BranchCode)) throw new ApplicationException("WhsV is required.");
+            
             return _repository.PostPayment(data);
         }
 
