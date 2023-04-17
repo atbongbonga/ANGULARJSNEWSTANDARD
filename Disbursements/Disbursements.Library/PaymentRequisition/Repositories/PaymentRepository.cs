@@ -239,7 +239,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     };
                     cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-                    storedProc = "spOPPost";
+                    storedProc = "HPCOMMON..spOPPost";
                     var parameters2 = new
                     {
                         opnum = docNum,
