@@ -46,7 +46,6 @@ namespace Disbursements.Library.COPS.Repositories
                     var pay = sap.VendorPayments;
                     var jrnlEntry = sap.JournalEntries;
 
-                    sap.BeginTran();
                     //POST OP
                     pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
 
@@ -146,7 +145,6 @@ namespace Disbursements.Library.COPS.Repositories
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     }
 
-                    sap.Commit();
 
                     //OLD SP
 
@@ -170,8 +168,6 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
-
                     LogError(new PaymentsErrorLogs
                     {
                         Module = "PAYMENT",
