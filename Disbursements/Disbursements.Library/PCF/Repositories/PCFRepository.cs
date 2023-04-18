@@ -41,7 +41,6 @@ namespace Disbursements.Library.PCF.Repositories
             {
                 try
                 {
-                    sap.BeginTran();
 
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
@@ -128,31 +127,6 @@ namespace Disbursements.Library.PCF.Repositories
                 }
                 catch (Exception ex)
                 {
-                    using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
-                    {
-                        var storedProc = PcfBuilder.spPcfLegacy1051();
-                        var parameters = new
-                        {
-                            mode = "RollbackJE",
-                            docEntry = data.Header.Docentry
-                        };
-
-                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
-                    }
-
-                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
-                    {
-                        var storedProc = "spPCFPosting";
-                        var parameters = new
-                        {
-                            mode = "RollbackJE",
-                            docEntry = docEntry
-                        };
-
-                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-                    }
-
                     LogError(new PCFErrorLogs
                     {
                         Module = "PCF POST JE",
@@ -459,7 +433,6 @@ namespace Disbursements.Library.PCF.Repositories
             {
                 try
                 {
-                    sap.BeginTran();
                     var entry = sap.VendorPayments;
                     entry.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
 
@@ -467,11 +440,9 @@ namespace Disbursements.Library.PCF.Repositories
                     {
                         entry.Reference2 = DocEntry;
                         entry.UserFields.Fields.Item("U_CardCode").Value = "PCF-" + DocEntry;
-                        sap.Commit();
                     }
                     else
                     {
-                        sap.Rollback();
                         return false;
                     }
 
@@ -479,7 +450,6 @@ namespace Disbursements.Library.PCF.Repositories
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
 
                     LogError(new PCFErrorLogs
                     {
