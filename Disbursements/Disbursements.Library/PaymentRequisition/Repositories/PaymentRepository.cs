@@ -153,6 +153,8 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             }
             catch (Exception ex)
             {
+
+                ClearSapEntry(Model.Header.Docentry);
                 LogError(new PaymentsErrorLogs
                 {
                     Module = "PAYMENT REQUISITION-PAYMENT",
@@ -270,6 +272,19 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         docEntry = log.DocEntry,
                         remarks = log.Remarks,
                         empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        private void ClearSapEntry(int prReqNo) {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentRequisition",
+                    new
+                    {
+                        mode = "CLEAR_SAP_ENTRY",
+                        prReqNo = prReqNo
                     }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
