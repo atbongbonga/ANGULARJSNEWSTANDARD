@@ -26,8 +26,7 @@ namespace Disbursements.Api.Controllers
         {
             try
             {
-                service.PostJrnlEntry(data);
-                return Ok();
+                return Ok(service.PostJrnlEntry(data).ToString());
             }
             catch (Exception ex)
             {
