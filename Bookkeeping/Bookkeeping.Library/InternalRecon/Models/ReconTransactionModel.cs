@@ -25,5 +25,6 @@ namespace Bookkeeping.Library.InternalRecon.Models
         public string? PostedBy { get; set; }
         public DateTime PostedDate { get; set; }
         public string? ErrorMessage { get; set; }
+        public DateTime ProcessedDate { get; set; }
     }
 }

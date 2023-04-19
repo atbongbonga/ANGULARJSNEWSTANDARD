@@ -111,14 +111,14 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public void InsertLogs(IEnumerable<ReconLog> _logs, string _userId)
+        public void Log(IEnumerable<ReconLog> _logs, string _userId)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
                 var storedProc = "spInternalReconTransaction";
                 var parameter = new
                 {
-                    mode = "INSERT_LOGS",
+                    mode = "LOG_ACTION",
                     logs = _logs.ToDataTable(),
                     userId = _userId
                 };
@@ -178,5 +178,17 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
+        public void AutoUpdate()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "AUTO_UPDATE"
+                };
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
     }
 }

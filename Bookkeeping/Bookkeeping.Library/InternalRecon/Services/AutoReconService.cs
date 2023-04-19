@@ -52,5 +52,10 @@ namespace Bookkeeping.Library.InternalRecon.Services
         {
             return _repository.GetTransactionRows(_transactions, segment_0, segment_1, reconDate);
         }
+
+        public void AutoUpdate()
+        {
+            _repository.AutoUpdate();
+        }
     }
 }

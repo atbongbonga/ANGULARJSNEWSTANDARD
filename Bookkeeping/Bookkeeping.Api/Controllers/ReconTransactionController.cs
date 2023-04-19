@@ -5,6 +5,7 @@ using Bookkeeping.Library.InternalRecon.ViewModels;
 using Bookkeeping.Library.InternalRecon.Models;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Linq;
 
 namespace Bookkeeping.Api.Controllers
 {
@@ -27,7 +28,7 @@ namespace Bookkeeping.Api.Controllers
         {
             try
             {
-                return Ok(service.GetTransactions(segment_0, segment_1, asOfDate));
+                return Ok(service.GetTransactions(segment_0, segment_1).Where(x => x.RefDate <= asOfDate));
             }
             catch (Exception ex)
             {
