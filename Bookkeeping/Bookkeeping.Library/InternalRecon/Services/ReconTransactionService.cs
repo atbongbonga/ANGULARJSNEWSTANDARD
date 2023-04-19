@@ -52,26 +52,9 @@ namespace Bookkeeping.Library.InternalRecon.Services
             return postedTransactions;
         }
 
-        public void UpdateTransactions(IEnumerable<ReconTransactionModel> data)
+        public void UpdateTransactions(int groupNumber)
         {
-            if (data is null) throw new ApplicationException("No data found");
-
-            var postedData = _repository.GetReconTransactions(data);
-
-            if (postedData is null) throw new ApplicationException("No existing data.");
-            else if (data.Any(x => !postedData.Any(y => y.DocEntry == x.DocEntry))) throw new ApplicationException("No existing data.");
-
-            _repository.UpdateTransactions(data, _userId!);
-
-            var logs = postedData.Select(x => new ReconLog
-            {
-                DocEntry = x.DocEntry,
-                EmpCode = _userId,
-                DocDate = DateTime.Now,
-                ActionTaken = "UPDATE"
-            });
-
-            _repository.InsertLogs(logs, _userId!);
+            _repository.UpdateTransactions(groupNumber);
         }
 
         public void RemoveTransactions(IEnumerable<ReconTransactionModel> data)
@@ -90,5 +73,23 @@ namespace Bookkeeping.Library.InternalRecon.Services
 
             _repository.InsertLogs(logs, _userId!);
         }
+
+        public IEnumerable<ReconTransactionViewModel> GetForRecon()
+        {
+            return _repository.GetForReconTransactions();
+        }
+
+        public IEnumerable<int> GetTransactionRows(IEnumerable<ReconTransactionViewModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            return _repository.GetTransactionRows(_transactions, segment_0, segment_1, reconDate);
+        }
+
+        public void Log(int _groupNumber, string _error = "")
+        {
+            if (_groupNumber.Equals(default)) throw new ArgumentException("Group number cannot be zero.");
+
+            _repository.Log(_groupNumber, _error);
+        }
+
     }
 }

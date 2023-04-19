@@ -1,5 +1,6 @@
 ﻿using AccountingLegacy.Disbursements.Library.PCF.Models;
 using Core.Library.Models;
+using Disbursements.Library.PCF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +9,12 @@ using System.Threading.Tasks;
 
 namespace AccountingLegacy.Disbursements.Library.PCF.ViewModels
 {
-    public class PCFUserInputView
+    public class PCFOPView 
     {
-        public PCFUserInputHeader Header { get; set; }
-        public List<PCFUserInputDetail> Detail { get; set; }
-      
-    }
+        public PCFOPHeaderView Header { get; set; }
+        public List<PCFOPAccountsView> Accounts { get; set; }
+        public List<PCFOPChecksView> Checks { get; set; }
 
-    public class PCFPostGLAccountView : PaymentAccount
-    { 
-        public List<PaymentAccount> PaymentAccounts { get; set; }
-        public List<PCFPostDuetoAdvanceAccounts> DuetoAdvancesAccounts { get; set; }
     }
-
 
 }

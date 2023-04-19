@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x86</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="OPUtils\**" />
+    <Compile Remove="PaymentRequisition\Services\**" />
+    <EmbeddedResource Remove="OPUtils\**" />
+    <EmbeddedResource Remove="PaymentRequisition\Services\**" />
+    <None Remove="OPUtils\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="PaymentRequisition\Services\PaymentService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <COMReference Include="SAPbobsCOM">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>8</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>fc8030be-f5d2-4b8e-8f92-44228fe30088</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core.Library\Core.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\Repositories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="COPS\Models\" />
+  </ItemGroup>
+
+</Project>

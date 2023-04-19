@@ -15,7 +15,7 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public int Sapentry { get; set; }
         public string PRNumber { get; set; } = string.Empty;
         public DateTime DueDate { get; set; }
-        public DateTime CheckDate { get; set; }
+        public bool UseDueDate { get; set; }
         public string Payee { get; set; } = string.Empty;
         public string AcctCode { get; set; } = string.Empty;
         public string AcctName { get; set; } = string.Empty;
@@ -35,6 +35,8 @@ namespace Disbursements.Library.PaymentRequisition.Models
         public string ControlAccount { get; set; } = string.Empty;
         public decimal AccountAmount { get; set; }
         public string CWPayee { get; set; } = string.Empty;
+        public string AcctType { get; set; } = string.Empty;
+        public string Bank { get; set; } = string.Empty;
 
     }
 }

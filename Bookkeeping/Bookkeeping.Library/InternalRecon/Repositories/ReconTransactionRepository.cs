@@ -75,7 +75,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
             }
         }
 
-        public void UpdateTransactions(IEnumerable<ReconTransactionModel> _data, string _userId)
+        public void UpdateTransactions(int _groupNumber)
         {
             using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
             {
@@ -83,8 +83,7 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 var parameter = new
                 {
                     mode = "UPDATE",
-                    data = _data.ToDataTable(),
-                    userId = _userId
+                    groupNumber = _groupNumber
                 };
                 cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
@@ -126,5 +125,58 @@ namespace Bookkeeping.Library.InternalRecon.Repositories
                 cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
             }
         }
+
+        public IEnumerable<ReconTransactionViewModel> GetForReconTransactions()
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "GET_FOR_RECON"
+                };
+                return cn.Query<ReconTransactionViewModel>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public IEnumerable<int> GetTransactionRows(IEnumerable<ReconTransactionViewModel> _transactions, string segment_0, string segment_1, DateTime reconDate)
+        {
+            var list = _transactions.Select(x => new AutoReconJEDetailsModel
+            {
+                TransId = x.TransId,
+                Line_ID = x.Line_ID
+            });
+
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spAutoInternalRecon";
+                var parameter = new
+                {
+                    mode = "GET_RECON_ROWS",
+                    jeDetails = list.ToDataTable(),
+                    segment_0 = segment_0,
+                    segment_1 = segment_1,
+                    reconDate = reconDate.ToShortDateString()
+                };
+
+                return cn.Query<int>(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
+        public void Log(int _groupNumber, string _error)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_BOOKKEEPING))
+            {
+                var storedProc = "spInternalReconTransaction";
+                var parameter = new
+                {
+                    mode = "LOG",
+                    groupNumber = _groupNumber,
+                    error = _error
+                };
+                cn.Execute(storedProc, parameter, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
     }
 }

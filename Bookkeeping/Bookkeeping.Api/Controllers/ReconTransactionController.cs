@@ -49,11 +49,11 @@ namespace Bookkeeping.Api.Controllers
         }
 
         [HttpPost, Route("update")]
-        public ActionResult UpdateTransactions(IEnumerable<ReconTransactionModel> transactions)
+        public ActionResult UpdateTransactions(int groupNumber)
         {
             try
             {
-                service.UpdateTransactions(transactions);
+                service.UpdateTransactions(groupNumber);
                 return Ok();
             }
             catch (Exception ex)

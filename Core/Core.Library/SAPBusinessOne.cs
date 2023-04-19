@@ -17,7 +17,10 @@ namespace AccountingLegacy.Core.Library
         public Company Company => company;
         public void BeginTran() => company.StartTransaction();
         public void Commit() => company.EndTransaction(BoWfTransOpt.wf_Commit);
-        public void Rollback() => company.EndTransaction(BoWfTransOpt.wf_RollBack);
+        public void Rollback()
+        {
+            if (company.InTransaction) company.EndTransaction(BoWfTransOpt.wf_RollBack);
+        }
 
         public JournalEntries JournalEntries => company.GetBusinessObject(BoObjectTypes.oJournalEntries);
         public Payments VendorPayments => company.GetBusinessObject(BoObjectTypes.oVendorPayments);
@@ -40,7 +43,7 @@ namespace AccountingLegacy.Core.Library
                 //_company.UseTrusted = true;
                 this.company.language = BoSuppLangs.ln_English;
                 var result = this.company.Connect();
-                if (result != 0) throw new ApplicationException("SAP login failed.");
+                if (result != 0) throw new ApplicationException($"SAP login failed:({ this.company.GetLastErrorCode }) { this.company.GetLastErrorDescription }");
             }
         }
 

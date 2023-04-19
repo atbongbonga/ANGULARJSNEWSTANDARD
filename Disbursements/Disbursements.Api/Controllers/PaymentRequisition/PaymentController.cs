@@ -3,11 +3,11 @@ using Disbursements.Library.PaymentRequisition.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Disbursements.Api.Controllers.PaymentRequisition
 {
-
+    [Authorize]
     [Route("api/paymentrequisition")]
     [ApiController]
     public class PaymentController : ControllerBase

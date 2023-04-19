@@ -3,25 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using Disbursements.Library.PCF.Services;
 using Disbursements.Library.PCF.ViewModels;
 using System.Security.Claims;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Disbursements.Api.Controllers
 {
-    [Route("api/pcfje")]
+    [Route("api/pcfje"), Authorize]
     [ApiController]
     public class PCFJEController : ControllerBase
     {
         private HttpContext httpContext;
-        private readonly JournalEntryService service;
+        private readonly PCFService service;
 
         public PCFJEController(IHttpContextAccessor accessor)
         {
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue(ClaimTypes.Sid);
-            this.service = new JournalEntryService(userCode);
+            this.service = new PCFService(userCode);
         }
 
-        [HttpPost("pcfje/post")]
+        [HttpPost("post")]
         public IActionResult PostJe(JrnlEntryView data)
         {
             try
@@ -34,6 +34,9 @@ namespace Disbursements.Api.Controllers
                 return BadRequest(ex.GetBaseException().Message);
             }
         }
+
+
+
 
 
     }

@@ -8,19 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
-    <Compile Remove="PaymentRequisition\Services\**" />
     <EmbeddedResource Remove="OPUtils\**" />
-    <EmbeddedResource Remove="PaymentRequisition\Services\**" />
     <None Remove="OPUtils\**" />
-    <None Remove="PaymentRequisition\Services\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Interfaces\Repositories\IAgencyRepository.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="PaymentRequisition\Services\PaymentService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,12 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\Repositories\" />
-    <Folder Include="PaymentRequisition\Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="COPS\Models\" />
+    <Folder Include="PCF\Models\" />
+    <Folder Include="PCF\Services\" />
   </ItemGroup>
 
 </Project>

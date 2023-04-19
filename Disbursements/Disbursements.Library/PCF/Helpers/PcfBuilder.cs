@@ -30,14 +30,15 @@ namespace Disbursements.Library.PCF.Helpers
         public static string PCFSERVER()
         {
             return "PCF JE";
+
         }
         public static string spPcfJE()
         {
             return "spPcfJE";
         }
-        public static string spPcfJE1051()
+        public static string spPcfLegacy1051()
         {
-            return "spPcfJELegacy";
+            return "spPcfLegacy";
         }
         public static string spModeJEUpdateTables()
         {

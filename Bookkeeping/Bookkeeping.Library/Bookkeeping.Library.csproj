@@ -4,31 +4,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="BankRecon\**" />
-    <EmbeddedResource Remove="BankRecon\**" />
-    <None Remove="BankRecon\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="InternalRecon\Models\BaseModel.cs" />
-    <Compile Remove="InternalRecon\Models\GLSetupDetailsModel.cs" />
-    <Compile Remove="InternalRecon\Models\GLSetupHeaderModel.cs" />
-    <Compile Remove="InternalRecon\Models\GLSetupLogsModel.cs" />
-    <Compile Remove="InternalRecon\Models\GLSetupRuleValuesModel.cs" />
-    <Compile Remove="InternalRecon\Repositories\GLSetupRepository.cs" />
-    <Compile Remove="InternalRecon\Services\GLSetupService.cs" />
-    <Compile Remove="InternalRecon\ViewModels\GLSetupHeaderViewModel.cs" />
-    <Compile Remove="InternalRecon\ViewModels\GLSetupLogsViewModel.cs" />
-    <Compile Remove="InternalRecon\ViewModels\GLSetupView.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
-    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 
