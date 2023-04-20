@@ -51,7 +51,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     pay.UserFields.Fields.Item("U_CardCode").Value = payment.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = payment.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.Header.U_HPDVoucherNo;
-                    pay.UserFields.Fields.Item("U_APDocNo").Value = sapEntry.ToString();
+                    pay.UserFields.Fields.Item("U_DocRef").Value = sapEntry.ToString();
                     pay.Reference2 = "R" + sapEntry.ToString();
 
                     //Accounts
@@ -116,7 +116,6 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                             pay.CreditCards.CreditAcct = item.CreditAcct;
                             pay.CreditCards.CreditCard = item.CreditCard;
                             pay.CreditCards.Add();
-
                         }
                     }
 
