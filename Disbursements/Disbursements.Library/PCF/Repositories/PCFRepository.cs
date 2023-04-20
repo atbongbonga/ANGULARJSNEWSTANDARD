@@ -36,12 +36,13 @@ namespace Disbursements.Library.PCF.Repositories
         {
             var docEntry = UpdateData(data);
             var jrnlEntry = GetTemplate(docEntry);
+            var pcfmonOPentry = 0;
 
             using (var sap = new SAPBusinessOne())
             {
                 try
                 {
-                    sap.BeginTran();
+                    //sap.BeginTran();
 
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
@@ -102,21 +103,46 @@ namespace Disbursements.Library.PCF.Repositories
                             cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
 
-                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                         {
-                            var storedProc = PcfBuilder.spPcfLegacy1051();
+                            var storedProc = "spPCFPosting";
                             var parameters = new
                             {
-                                mode = PcfBuilder.spModeJEUpdateTables(),
-                                transId = transId,
+                                mode = "POSTJE_PCFMON",
                                 pcfOP = jrnlEntry.Header.PCFOP,
-                                pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+                                transId = transId,
 
                             };
 
-                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
+                            pcfmonOPentry = cn.ExecuteScalar<int>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                         }
+
+
+                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                        {
+                          
+
+
+                                var storedProc = PcfBuilder.spPcfLegacy1051();
+                                var parameters = new
+                                {
+                                    mode = PcfBuilder.spModeJEUpdateTables(),
+                                    transId = transId,
+                                    pcfOP = jrnlEntry.Header.PCFOP,
+                                    pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+                                    opNumber = pcfmonOPentry
+
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+
+
+                         }
+
+
+
+
                         // Update return Jetrans docentry  for copsweb reference in UI
                         return docEntry;
                     }
@@ -191,6 +217,9 @@ namespace Disbursements.Library.PCF.Repositories
                 }
             }
         }
+
+        
+
 
         private int UpdateData(JrnlEntryView jrnlEntry)
         {
