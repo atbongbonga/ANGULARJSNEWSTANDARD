@@ -42,7 +42,6 @@ namespace AccountingLegacy.Disbursements.Library.COPS.Repositories
                             sap.Company.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
                         }
                         
-                        sap.BeginTran();
                         SAPbobsCOM.Payments oPay = (SAPbobsCOM.Payments)(sap.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oVendorPayments));
 
                         oPay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
@@ -119,18 +118,10 @@ namespace AccountingLegacy.Disbursements.Library.COPS.Repositories
                             }
 
                             #endregion
-
-
-
                         }
-
-                        sap.Commit();
-
-
                     }
                     catch (Exception ex)
                     {
-                        sap.Rollback();
                         throw ex;
                     }
                 }
@@ -138,7 +129,6 @@ namespace AccountingLegacy.Disbursements.Library.COPS.Repositories
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
