@@ -36,12 +36,199 @@ namespace Disbursements.Library.PCF.Repositories
         {
             var docEntry = UpdateData(data);
             var jrnlEntry = GetTemplate(docEntry);
+            var pcfmonOPentry = 0;
 
             using (var sap = new SAPBusinessOne())
             {
                 try
                 {
-                    sap.BeginTran();
+                    //sap.BeginTran();
+
+                    var entry = sap.JournalEntries;
+                    entry.ReferenceDate = jrnlEntry.Header.DocDate;
+                    entry.Memo = jrnlEntry.Header.Memo.Trim();
+                    entry.Reference = jrnlEntry.Header.Ref1.Trim();
+                    entry.Reference2 = jrnlEntry.Header.Ref2.Trim();
+                    entry.UserFields.Fields.Item("U_FTDocNo").Value = docEntry.ToString();
+                    if (jrnlEntry.Header.Ref3 is not null) entry.Reference3 = jrnlEntry.Header.Ref3.Trim();
+
+                    foreach (var item in jrnlEntry.Details)
+                    {
+                        entry.Lines.AccountCode = item.Account;
+                        entry.Lines.Debit = Convert.ToDouble(item.Debit);
+                        entry.Lines.Credit = Convert.ToDouble(item.Credit);
+                        entry.Lines.LineMemo = item.LineMemo;
+                        entry.Lines.ShortName = item.ShortName;
+                        entry.Lines.Reference1 = item.Ref1;
+                        entry.Lines.Reference2 = item.Ref2;
+                        entry.Lines.Add();
+                    }
+                    var returnValue = entry.Add();
+
+                    if (returnValue == 0)
+                    {
+                        var transId = Convert.ToInt32(sap.Company.GetNewObjectKey());
+
+                        //NEW UPDATE
+
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spJrnlEntryLogs";
+                            var parameters = new
+                            {
+                                mode = "PCFPostJE",
+                                empID = empCode,
+                                transId = transId,
+                                module = "PCF JE POSTING"
+
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                        }
+                        //OLD UPDATE
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spPCFPosting";
+                            var parameters = new
+                            {
+                                mode = "POST_JE",
+                                transId = transId,
+                                pcfOP = jrnlEntry.Header.PCFOP,
+                                pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+                                empCode = empCode,
+                                docEntry = docEntry
+                            };
+
+                            cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
+
+                        using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                        {
+                            var storedProc = "spPCFPosting";
+                            var parameters = new
+                            {
+                                mode = "POSTJE_PCFMON",
+                                pcfOP = jrnlEntry.Header.PCFOP,
+                                transId = transId,
+
+                            };
+
+                            pcfmonOPentry = cn.ExecuteScalar<int>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                        }
+
+
+                        using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                        {
+                          
+
+
+                                var storedProc = PcfBuilder.spPcfLegacy1051();
+                                var parameters = new
+                                {
+                                    mode = PcfBuilder.spModeJEUpdateTables(),
+                                    transId = transId,
+                                    pcfOP = jrnlEntry.Header.PCFOP,
+                                    pcfDoc = jrnlEntry.Header.Ref2.Trim(),
+                                    opNumber = pcfmonOPentry
+
+                                };
+
+                                cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+
+
+                         }
+
+
+
+
+                        // Update return Jetrans docentry  for copsweb reference in UI
+                        return docEntry;
+                    }
+                    else
+                    {
+                        var err = sap.Company.GetLastErrorDescription();
+                        throw new ApplicationException(err);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                    {
+                        var storedProc = PcfBuilder.spPcfLegacy1051();
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = data.Header.Docentry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                    }
+
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = docEntry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+
+                    LogError(new PCFErrorLogs
+                    {
+                        Module = "PCF POST JE",
+                        ErrorMsg = ex.GetBaseException().Message,
+                        DocEntry = data.Header.Docentry,
+                        Remarks = "",
+                        PostedBy = empCode
+                    });
+
+                    using (IDbConnection cn = new SqlConnection(server.EMS_HPCOMMON))
+                    {
+                        var storedProc = PcfBuilder.spPcfLegacy1051();
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = data.Header.Docentry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+
+                    }
+                    using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+                    {
+                        var storedProc = "spPCFPosting";
+                        var parameters = new
+                        {
+                            mode = "RollbackJE",
+                            docEntry = docEntry
+                        };
+
+                        cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+                    }
+
+
+                    throw new ApplicationException(ex.Message);
+                }
+            }
+        }
+
+        
+        public int PostJrnlEntry(JrnlEntryView data)
+        {
+            var docEntry = UpdateData(data);
+            var jrnlEntry = GetTemplate(docEntry);
+
+            using (var sap = new SAPBusinessOne())
+            {
+                try
+                {
+                    //sap.BeginTran();
 
                     var entry = sap.JournalEntries;
                     entry.ReferenceDate = jrnlEntry.Header.DocDate;
@@ -191,6 +378,7 @@ namespace Disbursements.Library.PCF.Repositories
                 }
             }
         }
+
 
         private int UpdateData(JrnlEntryView jrnlEntry)
         {
