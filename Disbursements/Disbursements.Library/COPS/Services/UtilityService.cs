@@ -25,7 +25,7 @@ namespace Disbursements.Library.COPS.Services
 
             if (string.IsNullOrEmpty(payment.Header.PMode)) throw new ApplicationException("Payment mode is required.");
 
-            if (string.IsNullOrEmpty(payment.Header.BankCode)) throw new ApplicationException("Bank code is required.");
+            if (string.IsNullOrEmpty(payment.Header.Bank)) throw new ApplicationException("Bank is required.");
 
             if (string.IsNullOrEmpty(payment.Header.Comments)) throw new ApplicationException("Remarks is required.");
 
