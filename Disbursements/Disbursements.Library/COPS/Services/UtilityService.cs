@@ -18,6 +18,17 @@ namespace Disbursements.Library.COPS.Services
         }
         public void PostUtilityPayment(PaymentUtilityView payment)
         {
+
+            if (payment is null || payment.Header is null) throw new ApplicationException("Data not found.");
+
+            if (string.IsNullOrEmpty(payment.Header.WhsCode)) throw new ApplicationException("Payment branch is required.");
+
+            if (string.IsNullOrEmpty(payment.Header.PMode)) throw new ApplicationException("Payment mode is required.");
+
+            if (string.IsNullOrEmpty(payment.Header.Bank)) throw new ApplicationException("Bank is required.");
+
+            if (string.IsNullOrEmpty(payment.Header.Comments)) throw new ApplicationException("Remarks is required.");
+
             repo.PostUtilityPayment(payment);
         }
     }

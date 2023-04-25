@@ -87,7 +87,7 @@ namespace Disbursements.Library.COPS.Repositories
                     pay.UserFields.Fields.Item("U_CardCode").Value = data.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = data.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = GetVoucher(data.Header.U_BranchCode, data.Header.DocDate);
-                    pay.UserFields.Fields.Item("U_APDocNo").Value = data.Header.OPUtilDocEntry;
+                    pay.UserFields.Fields.Item("U_APDocNo").Value = data.Header.OPUtilDocEntry.ToString();
                     pay.Reference2 = data.Header.Ref2;
 
                     if (data.Header.TransferAmt is not decimal.Zero)

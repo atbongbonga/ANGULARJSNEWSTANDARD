@@ -14,8 +14,8 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
         public string BrWhs { get; set; }
         public string GLAcct { get; set; }
         public string BrCode { get; set; }
-        public DateTime BillDate { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime? BillDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public bool IsManualVat { get; set; }
         public decimal NetVat { get; set; }
         public decimal Vat { get; set; }
