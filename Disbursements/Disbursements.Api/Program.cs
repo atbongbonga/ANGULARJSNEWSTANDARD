@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy => policy.AllowAnyMethod().AllowAnyHeader());
+    options.AddDefaultPolicy(policy => policy.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
