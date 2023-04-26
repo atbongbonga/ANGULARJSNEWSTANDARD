@@ -9,7 +9,7 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
 {
     public class PaymentUtilityJEView
     {
-        public string AcctCode { get; set; }
+        public string Account { get; set; }
         public decimal Debit { get; set; }
         public decimal Credit { get; set; }
     }

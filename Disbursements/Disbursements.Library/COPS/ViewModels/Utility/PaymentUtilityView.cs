@@ -11,7 +11,8 @@ namespace Disbursements.Library.COPS.ViewModels.Utility
         public PaymentUtilityHeaderView Header { get; set; }
         public IEnumerable<PaymentUtilityAccountView> Accounts { get; set; }
         public IEnumerable<PaymentUtilityCheckView>? Checks { get; set; }
-        public IEnumerable<PaymentUtilityCCView>? CreditCards { get; set; }
+
+        //public IEnumerable<PaymentUtilityCCView>? CreditCards { get; set; }
         public IEnumerable<PaymentUtilityJEView>? JournalEntries { get; set; }
 
     }

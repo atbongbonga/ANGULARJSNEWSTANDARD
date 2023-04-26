@@ -148,12 +148,13 @@ namespace Disbursements.Library.COPS.Repositories
                         jrnlEntry = sap.JournalEntries;
                         jrnlEntry.Reference = "CV" + docNum;
                         jrnlEntry.TaxDate = data.Header.DocDate;
+                        jrnlEntry.ReferenceDate = data.Header.DocDate;
                         jrnlEntry.DueDate = data.Header.DocDueDate;
                         jrnlEntry.Memo = data.Header.Comments;
 
                         foreach (var item in data.JournalEntries)
                         {
-                            jrnlEntry.Lines.AccountCode = item.AcctCode;
+                            jrnlEntry.Lines.AccountCode = item.Account;
                             jrnlEntry.Lines.Debit = (double)item.Debit;
                             jrnlEntry.Lines.Credit = (double)item.Credit;
                             jrnlEntry.Lines.LineMemo = data.Header.Comments;
@@ -161,7 +162,7 @@ namespace Disbursements.Library.COPS.Repositories
                             jrnlEntry.Lines.Add();
                         }
                         var JEReturnValue = jrnlEntry.Add();
-                        if (JEReturnValue != 0) 
+                        if (JEReturnValue == 0) 
                         { 
                             var JETransid = Convert.ToInt32(sap.Company.GetNewObjectKey()); 
                         }
@@ -172,6 +173,7 @@ namespace Disbursements.Library.COPS.Repositories
 
                     }
 
+                    sap.Commit();
 
                     using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                     {
@@ -190,7 +192,6 @@ namespace Disbursements.Library.COPS.Repositories
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     }
 
-                    sap.Commit();
 
                     //OLD SP UPDATE
                     //3.29
