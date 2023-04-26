@@ -28,7 +28,7 @@ namespace Bookkeeping.Api.Controllers
         {
             try
             {
-                return Ok(service.GetTransactions(segment_0, segment_1).Where(x => x.RefDate <= asOfDate));
+                return Ok(service.GetTransactions(segment_0, segment_1,asOfDate).Where(x => x.RefDate <= asOfDate));
             }
             catch (Exception ex)
             {
