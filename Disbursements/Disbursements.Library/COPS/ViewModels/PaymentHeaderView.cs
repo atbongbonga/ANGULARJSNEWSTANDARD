@@ -16,7 +16,7 @@ namespace Disbursements.Library.COPS.ViewModels
         public string WhsCode { get; set; }
         public string BankCode { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public string AcctCode { get; set; }
         public string CWPayee { get; set; }
         public string F2307Bill { get; set; }

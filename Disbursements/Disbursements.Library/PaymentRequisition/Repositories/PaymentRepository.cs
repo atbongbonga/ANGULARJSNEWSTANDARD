@@ -4,6 +4,7 @@ using Disbursements.Library.PaymentRequisition.Models;
 using MoreLinq;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
 
 namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
 {
@@ -23,18 +24,18 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             {
                 var sapEntry = InsertRequestPayment(Model);
                 var payment = GetTemplate(Model);
-                using (var sap = new SAPBusinessOne("172.30.1.167"))
+                using (var sap = new SAPBusinessOne())
                 {
                     var pay = sap.VendorPayments;
 
-                    sap.BeginTran();
                     if (payment.Header.DocType.Equals("A"))
                     { pay.DocType = SAPbobsCOM.BoRcptTypes.rAccount; }
-                    else {
+                    else
+                    {
                         pay.CardCode = payment.Header.CardCode;
                         pay.DocType = SAPbobsCOM.BoRcptTypes.rSupplier;
                     }
-                    
+
                     //Header
                     pay.DocObjectCode = SAPbobsCOM.BoPaymentsObjectType.bopot_OutgoingPayments;
                     pay.Address = payment.Header.Address;
@@ -50,32 +51,24 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     pay.UserFields.Fields.Item("U_CardCode").Value = payment.Header.CardCode;
                     pay.UserFields.Fields.Item("U_BranchCode").Value = payment.Header.U_BranchCode;
                     pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = payment.Header.U_HPDVoucherNo;
-                    pay.UserFields.Fields.Item("U_APDocNo").Value = payment.Header.U_APDocNo;
+                    pay.UserFields.Fields.Item("U_DocRef").Value = sapEntry.ToString();
                     pay.Reference2 = "R" + sapEntry.ToString();
 
                     //Accounts
-                    if (payment.Accounts.Count() > 0)
+                    if (payment.Accounts is not null && payment.Accounts.Count() > 0)
                     {
                         foreach (var item in payment.Accounts)
                         {
                             pay.AccountPayments.AccountCode = item.AcctCode;
                             pay.AccountPayments.SumPaid = Convert.ToDouble(item.SumApplied);
                             pay.AccountPayments.Decription = item.Description;
+                            pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = item.U_DocLine;
                             pay.AccountPayments.Add();
-
-                            if (item.EWT is not decimal.Zero)
-                            {
-                                pay.AccountPayments.AccountCode = item.AcctCode;
-                                pay.AccountPayments.SumPaid = Convert.ToDouble(item.EWT);
-                                pay.AccountPayments.Decription = item.Description;
-                                pay.AccountPayments.Add();
-
-                            }
                         }
                     }
 
                     // Set control and cash account for Payment on Acct Transaction.
-                    if (payment.Header.PayOnAccount)
+                    if (payment.Header.PayOnAccount && !payment.Header.PaymentMeans.Equals("BANK TRANSFER"))
                     {
                         pay.ControlAccount = payment.Header.ControlAccount;
                         pay.CashAccount = payment.Header.AcctCode;
@@ -92,12 +85,11 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     //Checks
-                    if (payment.Checks.Count() > 0)
+                    if (payment.Checks is not null && payment.Checks.Count() > 0)
                     {
 
                         foreach (var item in payment.Checks)
                         {
-
                             pay.Checks.Branch = item.Branch;
                             pay.Checks.AccounttNum = item.Branch;
                             pay.Checks.DueDate = payment.Header.DueDate;
@@ -112,7 +104,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     }
 
                     //Credit Card
-                    if (payment.CreditCards.Count() > 0)
+                    if (payment.CreditCards is not null && payment.CreditCards.Count() > 0)
                     {
                         foreach (var item in payment.CreditCards)
                         {
@@ -124,12 +116,11 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                             pay.CreditCards.CreditAcct = item.CreditAcct;
                             pay.CreditCards.CreditCard = item.CreditCard;
                             pay.CreditCards.Add();
-
                         }
                     }
 
                     //Invoice
-                    if (payment.Invoices.Count() > 0)
+                    if (payment.Invoices is not null && payment.Invoices.Count() > 0)
                     {
                         foreach (var item in payment.Invoices)
                         {
@@ -151,8 +142,7 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     if (pay.Add() == 0)
                     {
                         var docNum = Convert.ToInt32(sap.Company.GetNewObjectKey());
-                        sap.Commit();
-                        PostPaymentRequest(sapEntry ,docNum, payment);
+                        PostPaymentRequest(sapEntry, docNum, Model);
                     }
                     else
                     {
@@ -162,13 +152,23 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException(ex.GetBaseException().ToString());
+
+                ClearSapEntry(Model.Header.Docentry);
+                LogError(new PaymentsErrorLogs
+                {
+                    Module = "PAYMENT REQUISITION-PAYMENT",
+                    ErrorMsg = ex.GetBaseException().Message,
+                    DocEntry = Model.Header.Docentry,
+                    Remarks = "Payment Requisition Payment Posting Failed."
+                });
+                throw new ApplicationException(ex.GetBaseException().Message);
             }
         }
 
         private PaymentView GetTemplate(PaymentView paramModel)
         {
             PaymentView model = new PaymentView();
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(paramModel.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
                 try
@@ -177,27 +177,21 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                                  param: new
                                  {
                                      Mode = "PAYMENT_TEMPLATE",
-                                     cardCode = paramModel.Header.CardCode,
-                                     docEntry = paramModel.Header.Docentry,
-                                     sapEntry = paramModel.Header.Sapentry,
-                                     payOnAcct = paramModel.Header.PayOnAccount,
-                                     controlAcct = paramModel.Header.ControlAccount ,
-                                     docTotal = paramModel.Header.DocTotal,
-                                     ewtAmt = paramModel.Header.EWTAmount,
-                                     ewtAmt2 = paramModel.Header.EWTAmount2,
+                                     UDTPaymentRequestHeader = Header.ToDataTable(),
                                      UDTPaymentRequestAccount = paramModel.Accounts.ToDataTable(),
                                      UDTPaymentRequestInvoice = paramModel.Invoices.ToDataTable()
-                                 }, commandType: CommandType.StoredProcedure);
-                    model.Header = reader.Read<PaymentHeaderView>().Single();
+                                 }, commandType: CommandType.StoredProcedure); ; ;
+                    model.Header = reader.Read<PaymentHeaderView>().FirstOrDefault();
                     model.Accounts = reader.Read<PaymentAccountView>().ToList();
                     model.Checks = reader.Read<PaymentCheckView>().ToList();
                     model.CreditCards = reader.Read<PaymentCreditCardView>().ToList();
                     model.Invoices = reader.Read<PaymentInvoiceView>().ToList();
+                    model.PaymentATC = reader.Read<PaymentATCView>().ToList();
                     return model;
                 }
                 catch (Exception ex)
                 {
-                    throw new ApplicationException(ex.GetBaseException().ToString());
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
 
             }
@@ -205,47 +199,33 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
         }
         public int InsertRequestPayment(PaymentView model)
         {
-
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(model.Header);
             using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-                var oTransaction = cn.BeginTransaction();
                 try
                 {
                     var storedProc = "spPaymentRequisition";
                     var parameters = new
                     {
-                        Mode = "INSERT_REQUEST_PAYMENT",
-                        docEntry = model.Header.Docentry,
-                        cardCode = model.Header.CardCode,
-                        bankCode = model.Header.BankCode,
-                        bankName = model.Header.BankName,
-                        address = model.Header.Address,
-                        whsCode = model.Header.WhsCode,
-                        branchCode = model.Header.U_BranchCode,
+                        mode = "INSERT_REQUEST_PAYMENT",
                         userID = this.userCode,
-                        docType = model.Header.DocType,
-                        apDocNo = model.Header.U_APDocNo,
-                        checkPrint = model.Header.CheckPrint,
-                        checkRemarks = model.Header.CheckRemarks,
-                        cwPayee = model.Header.CWPayee
+                        UDTPaymentRequestHeader = Header.ToDataTable()
 
                     };
-                    var prDocentry = Convert.ToInt32(cn.ExecuteScalar(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0));
-                    oTransaction.Commit();
+                    var prDocentry = cn.ExecuteScalar<Int32>(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     return prDocentry;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    oTransaction.Rollback();
-                    throw;
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
             }
         }
-        public void PostPaymentRequest(int sapEntry , int docNum, PaymentView payment)
+        public void PostPaymentRequest(int sapEntry, int docNum, PaymentView payment)
         {
-            using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
+            List<PaymentHeaderView> Header = new List<PaymentHeaderView>(); Header.Add(payment.Header);
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
             {
-           
                 try
                 {
                     var storedProc = "spPaymentRequisition";
@@ -253,19 +233,14 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                     {
                         mode = "POST_PAYMENT_REQUEST",
                         opNum = docNum,
-                        docEntry = payment.Header.Docentry,
                         sapEntry = sapEntry,
-                        ewtAmt = payment.Header.EWTAmount,
-                        pmode = payment.Header.PaymentMode,
-                        atc = payment.Header.ATC,
-                        atc2 = payment.Header.ATC2,
-                        UDTPaymentRequestAccount = payment.Accounts.ToDataTable(),
-                        atcCount = payment.PaymentATC.Count()
-
+                        userID = this.userCode,
+                        UDTPaymentRequestHeader = Header.ToDataTable(),
+                        UDTPaymentRequestAccount = payment.Accounts.ToDataTable()
                     };
                     cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
 
-                    storedProc = "spOPPost";
+                    storedProc = "HPCOMMON..spOPPost";
                     var parameters2 = new
                     {
                         opnum = docNum,
@@ -275,15 +250,43 @@ namespace AccountingLegacy.Disbursements.Library.PaymentRequisition.Repositories
                         EmpID = this.userCode
                     };
                     cn.Execute(storedProc, parameters2, commandType: CommandType.StoredProcedure, commandTimeout: 0);
-
                 }
                 catch (Exception ex)
                 {
-                    throw new ApplicationException(ex.GetBaseException().ToString());
+                    throw new ApplicationException(ex.GetBaseException().Message);
                 }
             }
         }
+        private void LogError(PaymentsErrorLogs log)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentsError",
+                    new
+                    {
+                        mode = "INSERT",
+                        module = log.Module,
+                        message = log.ErrorMsg,
+                        docEntry = log.DocEntry,
+                        remarks = log.Remarks,
+                        empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
 
+        private void ClearSapEntry(int prReqNo) {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentRequisition",
+                    new
+                    {
+                        mode = "CLEAR_SAP_ENTRY",
+                        prReqNo = prReqNo
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
 
 
     }

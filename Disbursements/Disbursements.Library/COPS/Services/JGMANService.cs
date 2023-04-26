@@ -18,6 +18,7 @@ namespace Disbursements.Library.COPS.Services
 
         public void PostPayments(IEnumerable<SummaryView> data)
         {
+            if (data is null) throw new ApplicationException("Data not found.");
             repo.PostPayments(data);
         }
 

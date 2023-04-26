@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace Bookkeeping.Library.InternalRecon.ViewModels
 {
-    internal class ReconTransactionViewModel : ReconTransactionModel
+    public class ReconTransactionViewModel : ReconTransactionModel
     {
+        public int Id { get; set; }
+        public string? TransType { get; set; }
         public DateTime RefDate { get; set; }
         public string? Ref1 { get; set; }
         public string? Ref2 { get; set; }
@@ -19,5 +21,7 @@ namespace Bookkeeping.Library.InternalRecon.ViewModels
         public decimal BalDueDeb { get; set; }
         public decimal BalDueCred { get; set; }
         public string? AcctName { get; set; }
+        public string? Status { get; set; }
+        public string? FormatCode => $"{Segment_0}{Segment_1}000";
     }
 }

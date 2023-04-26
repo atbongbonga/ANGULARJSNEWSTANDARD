@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Dapper;
 using SAPbobsCOM;
 using System.Net;
+using Disbursements.Library.COPS.Models;
 
 namespace Disbursements.Library.COPS.Repositories
 {
@@ -31,7 +32,7 @@ namespace Disbursements.Library.COPS.Repositories
                 try
                 {
                     var result = GetPaymentView(item);
-                    using (var sap = new SAPBusinessOne("172.30.1.167"))
+                    using (var sap = new SAPBusinessOne())
                     {
                         var pay = sap.VendorPayments;
                         pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
@@ -47,12 +48,14 @@ namespace Disbursements.Library.COPS.Repositories
                         pay.UserFields.Fields.Item("U_CardCode").Value = result.Header.U_CardCode;
                         pay.UserFields.Fields.Item("U_BranchCode").Value = result.Header.U_BranchCode;
                         pay.UserFields.Fields.Item("U_HPDVoucherNo").Value = result.Header.U_HPDVoucherNo;
+                        pay.UserFields.Fields.Item("U_DocRef").Value = result.Header.U_APDocNo;
 
                         foreach (var account in result.Accounts)
                         {
                             pay.AccountPayments.AccountCode = account.AcctCode;
                             pay.AccountPayments.Decription = account.Description;
                             pay.AccountPayments.SumPaid = (double)account.SumApplied;
+                            pay.AccountPayments.UserFields.Fields.Item("U_DocLine").Value = account.LineId;
                             pay.AccountPayments.Add();
                         }
 
@@ -70,10 +73,11 @@ namespace Disbursements.Library.COPS.Repositories
                                     genId = item.GenId,
                                     branch = item.BrCode,
                                     acctType = item.AcctType,
+                                    userID = this.userCode
                                 }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                             }
 
-                            //OLD UPDATES
+                            ////OLD UPDATES
                             using (IDbConnection cn = new SqlConnection(server.SAP_HPCOMMON))
                             {
                                 cn.Execute("spOPPost", new
@@ -97,6 +101,13 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
+
+                    LogError(new PaymentsErrorLogs
+                    {
+                        Module = "JGMAN-PAYMENT",
+                        ErrorMsg = ex.GetBaseException().Message
+                    });
+                    throw new ApplicationException(ex.GetBaseException().Message);
                     //log error
                 }
             }
@@ -156,5 +167,24 @@ namespace Disbursements.Library.COPS.Repositories
             }
         }
 
+        private void LogError(PaymentsErrorLogs log)
+        {
+            using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
+            {
+                cn.Execute(
+                    "spPaymentsError",
+                    new
+                    {
+                        mode = "INSERT",
+                        module = log.Module,
+                        message = log.ErrorMsg,
+                        docEntry = log.DocEntry,
+                        remarks = log.Remarks,
+                        empCode = this.userCode
+                    }, commandType: CommandType.StoredProcedure, commandTimeout: 0);
+            }
+        }
+
     }
 }
+

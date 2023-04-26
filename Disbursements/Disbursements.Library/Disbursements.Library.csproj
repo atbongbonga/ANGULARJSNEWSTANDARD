@@ -9,14 +9,8 @@
 
   <ItemGroup>
     <Compile Remove="OPUtils\**" />
-    <Compile Remove="PaymentRequisition\Services\**" />
     <EmbeddedResource Remove="OPUtils\**" />
-    <EmbeddedResource Remove="PaymentRequisition\Services\**" />
     <None Remove="OPUtils\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="PaymentRequisition\Services\PaymentService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,12 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\Repositories\" />
-    <Folder Include="PaymentRequisition\Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="COPS\Models\" />
+    <Folder Include="PCF\Models\" />
+    <Folder Include="PCF\Services\" />
   </ItemGroup>
 
 </Project>

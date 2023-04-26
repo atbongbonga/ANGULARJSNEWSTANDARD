@@ -46,7 +46,6 @@ namespace Disbursements.Library.COPS.Repositories
                     var pay = sap.VendorPayments;
                     var jrnlEntry = sap.JournalEntries;
 
-                    sap.BeginTran();
                     //POST OP
                     pay.DocObjectCode = BoPaymentsObjectType.bopot_OutgoingPayments;
 
@@ -58,8 +57,8 @@ namespace Disbursements.Library.COPS.Repositories
                     else pay.DocType = BoRcptTypes.rAccount;
                     pay.CardName = data.Header.CardName ?? "";
                     pay.DocDate = data.Header.DocDate;
-                    pay.DueDate = data.Header.DueDate;
-                    pay.TaxDate = data.Header.TaxDate;
+                    pay.DueDate = data.Header.DueDate ?? data.Header.DocDate;
+                    pay.TaxDate = data.Header.DocDate; //should be taxdate
 
                     pay.Remarks = data.Header.Comments ?? "";
                     pay.JournalRemarks = data.Header.JrnlMemo ?? "";
@@ -146,7 +145,6 @@ namespace Disbursements.Library.COPS.Repositories
                         cn.Execute(storedProc, parameters, commandType: CommandType.StoredProcedure, commandTimeout: 0);
                     }
 
-                    sap.Commit();
 
                     //OLD SP
 
@@ -170,8 +168,6 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
-
                     LogError(new PaymentsErrorLogs
                     {
                         Module = "PAYMENT",
@@ -192,7 +188,6 @@ namespace Disbursements.Library.COPS.Repositories
                     var jrnlEntry = sap.JournalEntries;
                     pay.GetByKey(payment.DocNum);
                    
-                    sap.BeginTran();
 
                     //UPDATE OP
                     pay.UserFields.Fields.Item("U_APDocNo").Value = payment.U_APDocNo;
@@ -205,7 +200,6 @@ namespace Disbursements.Library.COPS.Repositories
                     if (returnValue != 0) { 
                         throw new ApplicationException(sap.Company.GetLastErrorDescription());
                     }
-                    sap.Commit();
 
                     using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                     {
@@ -223,7 +217,6 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
 
                     LogError(new PaymentsErrorLogs
                     {
@@ -246,7 +239,6 @@ namespace Disbursements.Library.COPS.Repositories
                     var jrnlEntry = sap.JournalEntries;
                     var data = GetPaymentByDocNum(docNum);
 
-                    sap.BeginTran();
                     //CANCEL OP
 
                     if (pay.GetByKey(docNum) == true)
@@ -281,8 +273,6 @@ namespace Disbursements.Library.COPS.Repositories
                         
                     }
 
-                    sap.Commit();
-
                     using (IDbConnection cn = new SqlConnection(server.SAP_DISBURSEMENTS))
                     {
                         var storedProc = "spOutgoingPayment";
@@ -297,8 +287,6 @@ namespace Disbursements.Library.COPS.Repositories
                 }
                 catch (Exception ex)
                 {
-                    sap.Rollback();
-
                     LogError(new PaymentsErrorLogs
                     {
                         Module = "CANCEL PAYMENT",

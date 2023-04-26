@@ -12,13 +12,13 @@ namespace Disbursements.Api.Controllers
     public class PCFJEController : ControllerBase
     {
         private HttpContext httpContext;
-        private readonly JournalEntryService service;
+        private readonly PCFService service;
 
         public PCFJEController(IHttpContextAccessor accessor)
         {
             httpContext = accessor.HttpContext;
             var userCode = httpContext.User.FindFirstValue(ClaimTypes.Sid);
-            this.service = new JournalEntryService(userCode);
+            this.service = new PCFService(userCode);
         }
 
         [HttpPost("post")]
@@ -26,14 +26,16 @@ namespace Disbursements.Api.Controllers
         {
             try
             {
-                service.PostJrnlEntry(data);
-                return Ok();
+                return Ok(service.PostJrnlEntry(data).ToString());
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.GetBaseException().Message);
             }
         }
+
+
+
 
 
     }
